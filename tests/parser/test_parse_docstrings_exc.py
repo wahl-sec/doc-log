@@ -3,10 +3,10 @@
 
 import pytest
 
-from doc_log.logger import parse_docstring
+from doc_log.parser import parse_docstring
 
 
-def test_pep257_style_simple():
+def test_parse_pep257_style_simple_exc():
     def _test_func(i, j=0) -> int:
         """Function that adds two numbers and returns the result.
 
@@ -16,23 +16,32 @@ def test_pep257_style_simple():
         Keyword Arguments:
         j -- the second number (default 0)
 
+        Types:
+        i -- int
+        j -- int
+
         Exceptions:
         ValueError -- if the first number is even
 
         Returns:
         Result of addition between `i` and `j`.
+
+        Return Type:
+        int
         """
         if i % 2 == 0:
             raise ValueError
 
         return i + j
 
-    parsed_docstring = parse_docstring(_test_func.__doc__, logger="pep257")
+    parsed_docstring = parse_docstring(_test_func.__doc__, dialect="pep257")
     expected = {
         "arguments": {"i": "the first number"},
         "keywords": {"j": "the second number (default 0)"},
+        "types": {"i": "int", "j": "int"},
         "raises": {"ValueError": "if the first number is even"},
         "returns": {None: "Result of addition between `i` and `j`."},
+        "rtypes": {None: "int"},
     }
 
     assert all(
@@ -56,26 +65,31 @@ def test_pep257_style_simple():
         _test_func(2, 2)
 
 
-def test_epytext_style_simple():
+def test_parse_epytext_style_simple_exc():
     def _test_func(i, j) -> int:
         """
         Function that adds two numbers and returns the result.
 
         @param i: the first number
+        @type i: int
         @param j: the second number
+        @type j: int
         @raise ValueError: if the first number is even
         @return: Result of addition between `i` and `j`.
+        @rtype: int
         """
         if i % 2 == 0:
             raise ValueError
 
         return i + j
 
-    parsed_docstring = parse_docstring(_test_func.__doc__, logger="epytext")
+    parsed_docstring = parse_docstring(_test_func.__doc__, dialect="epytext")
     expected = {
         "arguments": {"i": "the first number", "j": "the second number"},
         "raises": {"ValueError": "if the first number is even"},
         "returns": {None: "Result of addition between `i` and `j`."},
+        "types": {"i": "int", "j": "int"},
+        "rtypes": {None: "int"},
     }
 
     assert all(
@@ -99,7 +113,7 @@ def test_epytext_style_simple():
         _test_func(2, 2)
 
 
-def test_rest_style_simple():
+def test_parse_rest_style_simple_exc():
     def _test_func(i, j) -> int:
         """Function that adds two numbers and returns the result.
 
@@ -116,7 +130,7 @@ def test_rest_style_simple():
 
         return i + j
 
-    parsed_docstring = parse_docstring(_test_func.__doc__, logger="rest")
+    parsed_docstring = parse_docstring(_test_func.__doc__, dialect="rest")
     expected = {
         "arguments": {"i": "the first number", "j": "the second number"},
         "types": {"i": "int", "j": "int"},
@@ -146,7 +160,7 @@ def test_rest_style_simple():
         _test_func(2, 2)
 
 
-def test_google_style_simple():
+def test_parse_google_style_simple_exc():
     def _test_func(i, j) -> int:
         """Function that adds two numbers and returns the result.
 
@@ -154,22 +168,31 @@ def test_google_style_simple():
             i: the first number
             j: the second number
 
+        Types:
+            i: int
+            j: int
+
         Raises:
             ValueError: if the first number is even
 
         Returns:
             Result of addition between `i` and `j`.
+
+        Return Type:
+            int
         """
         if i % 2 == 0:
             raise ValueError
 
         return i + j
 
-    parsed_docstring = parse_docstring(_test_func.__doc__, logger="google")
+    parsed_docstring = parse_docstring(_test_func.__doc__, dialect="google")
     expected = {
         "arguments": {"i": "the first number", "j": "the second number"},
+        "types": {"i": "int", "j": "int"},
         "raises": {"ValueError": "if the first number is even"},
         "returns": {None: "Result of addition between `i` and `j`."},
+        "rtypes": {None: "int"},
     }
 
     assert all(
@@ -178,6 +201,8 @@ def test_google_style_simple():
             for section_name, section in parsed_docstring.items()
         ]
     )
+
+    print(expected, "\n\n", parsed_docstring)
     assert all(
         [
             all([expected_items[item.name] == item.value for item in section_items])
@@ -193,7 +218,7 @@ def test_google_style_simple():
         _test_func(2, 2)
 
 
-def test_numpydoc_style_simple():
+def test_parse_numpydoc_style_simple_exc():
     def _test_func(i, j) -> int:
         """Function that adds two numbers and returns the result.
 
@@ -220,7 +245,7 @@ def test_numpydoc_style_simple():
         return i + j
 
     with pytest.raises(NotImplementedError):
-        parsed_docstring = parse_docstring(_test_func.__doc__, logger="numpydoc")
+        parsed_docstring = parse_docstring(_test_func.__doc__, dialect="numpydoc")
         expected = {
             "arguments": {"i": "the first number", "j": "the second number"},
             "types": {"i": "int", "j": "int"},

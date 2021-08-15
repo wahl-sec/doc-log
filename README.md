@@ -82,7 +82,7 @@ def add_two(i: int) -> int:
     """
     return i + 2
 
-print(parse_docstring(add_two.__doc__, logger="pep257"))
+print(parse_docstring(add_two.__doc__, dialect="pep257"))
 ```
 
 ```shell

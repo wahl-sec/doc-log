@@ -20,8 +20,9 @@ class SectionPattern:
     if no name is present.
     The value of the parameter i.e parameter i in the following example.
 
+    ```
     :param i: parameter i
-
+    ```
     """
 
     section: PatternDescriptor
@@ -45,11 +46,13 @@ class Section:
     items: List[SectionItem]
 
 
-def parse_docstring(docstring: str, logger: str) -> Dict[str, str]:
+def parse_docstring(docstring: str, dialect: str) -> Dict[str, str]:
     """Parse the docstring and extract the rules related to doc-log.
 
     :param docstring: The docstring to extract rules from.
     :type docstring: str
+    :param dialect: The dialect of the docstring to parse.
+    :type dialect: str
     :returns: The rules extracted from the docstring.
     :rtype: Dict[str, str]
     """
@@ -234,6 +237,16 @@ def parse_docstring(docstring: str, logger: str) -> Dict[str, str]:
                 name=r" .*(?=:)",
                 value=r"--\ .*$",
             ),
+            "types": SectionPattern(
+                section=PatternDescriptor(pattern=r"^Types:$"),
+                name=r" .*(?=:)",
+                value=r"--\ .*$",
+            ),
+            "rtypes": SectionPattern(
+                section=PatternDescriptor(pattern=r"^Return Type:$"),
+                name=r" .*(?=:)",
+                value=r"--\ .*$",
+            ),
         }
 
         sections_oneline = {
@@ -247,6 +260,11 @@ def parse_docstring(docstring: str, logger: str) -> Dict[str, str]:
                 name=r"(?<= ).*(?= --)",
                 value=r"(?<=-- ).*$",
             ),
+            "types": SectionPattern(
+                section=PatternDescriptor(pattern=r"^:types"),
+                name=r"(?<= ).*(?= --)",
+                value=r"(?<=-- ).*$",
+            ),
             "raises": SectionPattern(
                 section=PatternDescriptor(pattern=r"^:raises"),
                 name=r"(?<= ).*(?= --)",
@@ -256,6 +274,11 @@ def parse_docstring(docstring: str, logger: str) -> Dict[str, str]:
                 section=PatternDescriptor(pattern=r"^:returns"),
                 name=r"(?<= ).*(?= --)",
                 value=r"(?<=:returns ).*$",
+            ),
+            "rtypes": SectionPattern(
+                section=PatternDescriptor(pattern=r"^:rtypes"),
+                name=r"(?<= ).*(?= --)",
+                value=r"(?<=:rtypes ).*$",
             ),
         }
 
@@ -280,6 +303,11 @@ def parse_docstring(docstring: str, logger: str) -> Dict[str, str]:
                 name=r"(?<= ).*(?=:)",
                 value=r"(?<=:) .*$",
             ),
+            "types": SectionPattern(
+                section=PatternDescriptor(pattern=r"^@type"),
+                name=r"(?<= ).*(?=:)",
+                value=r"(?<=:) .*$",
+            ),
             "raises": SectionPattern(
                 section=PatternDescriptor(pattern=r"^@raise"),
                 name=r"(?<= ).*(?=:)",
@@ -287,6 +315,10 @@ def parse_docstring(docstring: str, logger: str) -> Dict[str, str]:
             ),
             "returns": SectionPattern(
                 section=PatternDescriptor(pattern=r"^@return"),
+                value=r"(?<=:) .*$",
+            ),
+            "rtypes": SectionPattern(
+                section=PatternDescriptor(pattern=r"^@rtype"),
                 value=r"(?<=:) .*$",
             ),
         }
@@ -346,6 +378,11 @@ def parse_docstring(docstring: str, logger: str) -> Dict[str, str]:
                 name=r"(?<= ).*(?=:)",
                 value=r"(?<=: ).*$",
             ),
+            "types": SectionPattern(
+                section=PatternDescriptor(pattern=r"^Types:$"),
+                name=r"(?<= ).*(?=:)",
+                value=r"(?<=: ).*$",
+            ),
             "raises": SectionPattern(
                 section=PatternDescriptor(pattern=r"^Raises:$"),
                 name=r"(?<= ).*(?=:)",
@@ -355,11 +392,20 @@ def parse_docstring(docstring: str, logger: str) -> Dict[str, str]:
                 section=PatternDescriptor(pattern=r"^Returns:$"),
                 value=r"(?<=: ).*$",
             ),
+            "rtypes": SectionPattern(
+                section=PatternDescriptor(pattern=r"^Return Type:$"),
+                value=r"(?<=: ).*$",
+            ),
         }
 
         sections_oneline = {
             "arguments": SectionPattern(
                 section=PatternDescriptor(pattern=r"^:arguments"),
+                name=r"(?<= ).*(?=:)",
+                value=r"(?<=: ).*$",
+            ),
+            "types": SectionPattern(
+                section=PatternDescriptor(pattern=r"^:types"),
                 name=r"(?<= ).*(?=:)",
                 value=r"(?<=: ).*$",
             ),
@@ -372,6 +418,11 @@ def parse_docstring(docstring: str, logger: str) -> Dict[str, str]:
                 section=PatternDescriptor(pattern=r"^:returns"),
                 name=r"(?<= ).*(?=:)",
                 value=r"(?<=:returns ).*$",
+            ),
+            "rtypes": SectionPattern(
+                section=PatternDescriptor(pattern=r"^:rtype"),
+                name=r"(?<= ).*(?=:)",
+                value=r"(?<=:rtypes ).*$",
             ),
         }
 
@@ -392,17 +443,17 @@ def parse_docstring(docstring: str, logger: str) -> Dict[str, str]:
         """
         raise NotImplementedError
 
-    if logger.lower() == "pep257":
+    if dialect.lower() == "pep257":
         return _parse_pep257_multiline(docstring)
-    elif logger.lower() == "epytext":
+    elif dialect.lower() == "epytext":
         return _parse_epytext_multiline(docstring)
-    elif logger.lower() == "rest":
+    elif dialect.lower() == "rest":
         return _parse_rest_multiline(docstring)
-    elif logger.lower() == "google":
+    elif dialect.lower() == "google":
         return _parse_google_multiline(docstring)
-    elif logger.lower() == "numpydoc":
+    elif dialect.lower() == "numpydoc":
         return _parse_numpydoc_multiline(docstring)
     else:
         raise ValueError(
-            f"Logger type: {logger}, expected one of 'pep257', 'epytext', 'rest', 'google' or 'numpydoc'"
+            f"Dialect type: {dialect}, expected one of 'pep257', 'epytext', 'rest', 'google' or 'numpydoc'"
         )
