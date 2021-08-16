@@ -3,7 +3,7 @@
 from functools import wraps
 
 from doc_log.parser import parse_docstring
-from doc_log.types import type_check_arguments, type_check_rtype
+from doc_log.types import type_check_arguments, type_check_rtypes
 
 
 def doc_log(dialect: str, type_check: bool = True, active_type_check: bool = False):

@@ -4,7 +4,7 @@
 import pytest
 
 from doc_log.parser import parse_docstring
-from doc_log.types import type_check_arguments, type_check_rtype
+from doc_log.types import type_check_arguments, type_check_rtypes
 
 
 def test_type_check_pep257_style_simple_passive():
@@ -31,22 +31,17 @@ def test_type_check_pep257_style_simple_passive():
 
     i, j = 2, 2
     parsed_docstring = parse_docstring(_test_func.__doc__, dialect="pep257")
-    type_check_i = type_check_arguments(
-        parsed_docstring["arguments"],
-        active_type_check=False,
-        parameters={"i": i},
+    type_check_results = type_check_arguments(
+        parsed_docstring["types"],
+        parameters={"i": i, "j": j},
     )
-    assert type_check_i["i"].result
-    assert type_check_i["i"].expected == type_check_i["i"].actual
-
-    type_check_j = type_check_arguments(
-        parsed_docstring["keywords"], active_type_check=False, parameters={"j": j}
-    )
-    assert type_check_j["j"].result
-    assert type_check_j["j"].expected == type_check_j["j"].actual
+    assert type_check_results["i"].result
+    assert type_check_results["i"].expected == type_check_results["i"].actual
+    assert type_check_results["j"].result
+    assert type_check_results["j"].expected == type_check_results["j"].actual
 
     result = _test_func(i, j)
-    type_check_returns = type_check_rtype(parsed_docstring["returns"], result=[result])
+    type_check_returns = type_check_rtypes(parsed_docstring["rtypes"], results=[result])
     assert len(type_check_returns) == 1
     assert type_check_returns[0].result
     assert (
@@ -64,29 +59,27 @@ def test_type_check_epytext_style_simple_passive():
         Function that adds two numbers and returns the result.
 
         @param i: the first number
+        @type i: int
         @param j: the second number
+        @type j: int
         @return: Result of addition between `i` and `j`.
+        @rtype: int
         """
         return i + j
 
     i, j = 2, 2
     parsed_docstring = parse_docstring(_test_func.__doc__, dialect="epytext")
-    type_check_i = type_check_arguments(
-        parsed_docstring["arguments"],
-        active_type_check=False,
-        parameters={"i": i},
+    type_check_results = type_check_arguments(
+        parsed_docstring["types"],
+        parameters={"i": i, "j": j},
     )
-    assert type_check_i["i"].result
-    assert type_check_i["i"].expected == type_check_i["i"].actual
-
-    type_check_j = type_check_arguments(
-        parsed_docstring["keywords"], active_type_check=False, parameters={"j": j}
-    )
-    assert type_check_j["j"].result
-    assert type_check_j["j"].expected == type_check_j["j"].actual
+    assert type_check_results["i"].result
+    assert type_check_results["i"].expected == type_check_results["i"].actual
+    assert type_check_results["j"].result
+    assert type_check_results["j"].expected == type_check_results["j"].actual
 
     result = _test_func(i, j)
-    type_check_returns = type_check_rtype(parsed_docstring["returns"], result=[result])
+    type_check_returns = type_check_rtypes(parsed_docstring["rtypes"], results=[result])
     assert len(type_check_returns) == 1
     assert type_check_returns[0].result
     assert (
@@ -113,22 +106,17 @@ def test_type_check_rest_style_simple_passive():
 
     i, j = 2, 2
     parsed_docstring = parse_docstring(_test_func.__doc__, dialect="rest")
-    type_check_i = type_check_arguments(
-        parsed_docstring["arguments"],
-        active_type_check=False,
-        parameters={"i": i},
+    type_check_results = type_check_arguments(
+        parsed_docstring["types"],
+        parameters={"i": i, "j": j},
     )
-    assert type_check_i["i"].result
-    assert type_check_i["i"].expected == type_check_i["i"].actual
-
-    type_check_j = type_check_arguments(
-        parsed_docstring["keywords"], active_type_check=False, parameters={"j": j}
-    )
-    assert type_check_j["j"].result
-    assert type_check_j["j"].expected == type_check_j["j"].actual
+    assert type_check_results["i"].result
+    assert type_check_results["i"].expected == type_check_results["i"].actual
+    assert type_check_results["j"].result
+    assert type_check_results["j"].expected == type_check_results["j"].actual
 
     result = _test_func(i, j)
-    type_check_returns = type_check_rtype(parsed_docstring["returns"], result=[result])
+    type_check_returns = type_check_rtypes(parsed_docstring["rtypes"], results=[result])
     assert len(type_check_returns) == 1
     assert type_check_returns[0].result
     assert (
@@ -148,29 +136,31 @@ def test_type_check_google_style_simple_passive():
             i: the first number
             j: the second number
 
+        Types:
+            i: int
+            j: int
+
         Returns:
             Result of addition between `i` and `j`.
+
+        Return Type:
+            int
         """
         return i + j
 
     i, j = 2, 2
     parsed_docstring = parse_docstring(_test_func.__doc__, dialect="google")
-    type_check_i = type_check_arguments(
-        parsed_docstring["arguments"],
-        active_type_check=False,
-        parameters={"i": i},
+    type_check_results = type_check_arguments(
+        parsed_docstring["types"],
+        parameters={"i": i, "j": j},
     )
-    assert type_check_i["i"].result
-    assert type_check_i["i"].expected == type_check_i["i"].actual
-
-    type_check_j = type_check_arguments(
-        parsed_docstring["keywords"], active_type_check=False, parameters={"j": j}
-    )
-    assert type_check_j["j"].result
-    assert type_check_j["j"].expected == type_check_j["j"].actual
+    assert type_check_results["i"].result
+    assert type_check_results["i"].expected == type_check_results["i"].actual
+    assert type_check_results["j"].result
+    assert type_check_results["j"].expected == type_check_results["j"].actual
 
     result = _test_func(i, j)
-    type_check_returns = type_check_rtype(parsed_docstring["returns"], result=[result])
+    type_check_returns = type_check_rtypes(parsed_docstring["rtypes"], results=[result])
     assert len(type_check_returns) == 1
     assert type_check_returns[0].result
     assert (
@@ -203,23 +193,18 @@ def test_type_check_numpydoc_style_simple_passive():
     with pytest.raises(NotImplementedError):
         i, j = 2, 2
         parsed_docstring = parse_docstring(_test_func.__doc__, dialect="numpydoc")
-        type_check_i = type_check_arguments(
-            parsed_docstring["arguments"],
-            active_type_check=False,
-            parameters={"i": i},
+        type_check_results = type_check_arguments(
+            parsed_docstring["types"],
+            parameters={"i": i, "j": j},
         )
-        assert type_check_i["i"].result
-        assert type_check_i["i"].expected == type_check_i["i"].actual
-
-        type_check_j = type_check_arguments(
-            parsed_docstring["keywords"], active_type_check=False, parameters={"j": j}
-        )
-        assert type_check_j["j"].result
-        assert type_check_j["j"].expected == type_check_j["j"].actual
+        assert type_check_results["i"].result
+        assert type_check_results["i"].expected == type_check_results["i"].actual
+        assert type_check_results["j"].result
+        assert type_check_results["j"].expected == type_check_results["j"].actual
 
         result = _test_func(i, j)
-        type_check_returns = type_check_rtype(
-            parsed_docstring["returns"], result=[result]
+        type_check_returns = type_check_rtypes(
+            parsed_docstring["rtypes"], results=[result]
         )
         assert len(type_check_returns) == 1
         assert type_check_returns[0].result
