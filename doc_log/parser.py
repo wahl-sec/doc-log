@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-from re import compile, split
+from re import compile
 from dataclasses import dataclass
 from typing import Dict, List, Optional
 
@@ -455,5 +455,5 @@ def parse_docstring(docstring: str, dialect: str) -> Dict[str, str]:
         return _parse_numpydoc_multiline(docstring)
     else:
         raise ValueError(
-            f"Dialect type: {dialect}, expected one of 'pep257', 'epytext', 'rest', 'google' or 'numpydoc'"
+            f"Dialect type: {dialect}, expected one of `pep257`, `epytext`, `rest`, `google` or `numpydoc`"
         )

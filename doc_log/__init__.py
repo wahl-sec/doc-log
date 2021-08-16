@@ -15,9 +15,54 @@ def doc_log(dialect: str, type_check: bool = True, active_type_check: bool = Fal
                 # TODO: Add validation checks for the rules to ensure expected format.
 
                 if type_check:
-                    pass
+                    if "types" in rules:
+                        _type_check_arguments_results = type_check_arguments(
+                            types=rules["types"], parameters=kwargs
+                        )
 
-            return func(*args, **kwargs)
+                        for (
+                            parameter,
+                            section_item_result,
+                        ) in _type_check_arguments_results.items():
+                            if not section_item_result.result:
+                                if active_type_check:
+                                    raise TypeError(
+                                        f"`{parameter}` was not of expected type: `{section_item_result.expected}` was actually `{section_item_result.actual}`"
+                                    )
+                                else:
+                                    # TODO: Add logging warning for when item was not of expected type.
+                                    pass
+
+                    else:
+                        # TODO: Add logging warning when parsed docstrings
+                        # don't contain a `types` section.
+                        pass
+
+                    _function_return_value = func(*args, **kwargs)
+                    if "rtypes" in rules:
+                        _type_check_rtypes_results = type_check_rtypes(
+                            rtypes=rules["rtypes"], results=[_function_return_value]
+                        )
+
+                        for rtype in _type_check_rtypes_results:
+                            if not rtype.result:
+                                if active_type_check:
+                                    raise TypeError(
+                                        f"return type was not of expected type: `{rtype.expected}` was actually `{rtype.actual}`"
+                                    )
+                                else:
+                                    # TODO: Add logging warning for when item was not of expected type.
+                                    pass
+
+                    else:
+                        # TODO: Add logging warning when parsed docstrings
+                        # don't contain a `types` section.
+                        pass
+
+            else:
+                _function_return_value = func(*args, **kwargs)
+
+            return _function_return_value
 
         return wrapper
 

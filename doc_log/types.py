@@ -35,13 +35,13 @@ def type_check_arguments(
     :rtype: Dict[str, SectionItemTypeResult]
     """
     if types.section != "types":
-        raise KeyError("Provided section needs to be of type: 'types'")
+        raise KeyError("Provided section needs to be of type: `types`")
 
     type_check_results = {parameter: None for parameter in parameters}
     for section_item in types.items:
         if section_item.name not in parameters:
             # TODO: Add some warning for if parameters provided and the ones
-            # defined in 'types' section differ in either direction.
+            # defined in `types` section differ in either direction.
             continue
 
         _parameter_type = type(parameters[section_item.name]).__name__
@@ -69,11 +69,11 @@ def type_check_rtypes(
     :rtype: Tuple[SectionItemTypeResult]
     """
     if rtypes.section != "rtypes":
-        raise KeyError("Provided section needs to be of type: 'rtypes'")
+        raise KeyError("Provided section needs to be of type: `rtypes`")
 
     if len(rtypes.items) != len(results):
         # TODO: Add some warning for if parameters provided and the ones
-        # defined in 'rtypes' section differ in either direction.
+        # defined in `rtypes` section differ in either direction.
         pass
 
     type_check_results = tuple(type(_type).__name__ for _type in results)

@@ -202,7 +202,6 @@ def test_parse_google_style_simple_exc():
         ]
     )
 
-    print(expected, "\n\n", parsed_docstring)
     assert all(
         [
             all([expected_items[item.name] == item.value for item in section_items])
