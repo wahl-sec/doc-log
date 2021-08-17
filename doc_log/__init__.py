@@ -11,7 +11,7 @@ def doc_log(dialect: str, type_check: bool = True, active_type_check: bool = Fal
         @wraps(func)
         def wrapper(*args, **kwargs):
             if func.__doc__:
-                rules = parse_docstring(docstring=func.__doc__, dialect=dialect)
+                rules = parse_docstring(_function=func, dialect=dialect)
                 # TODO: Add validation checks for the rules to ensure expected format.
 
                 if type_check:

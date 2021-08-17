@@ -8,7 +8,7 @@ from doc_log.types import type_check_arguments, type_check_rtypes
 
 
 def test_type_check_pep257_style_simple_passive():
-    def _test_func(i, j=0) -> int:
+    def _test_func(i: str, j: int = 0) -> int:
         """Function that adds two numbers and returns the result.
 
         Arguments:
@@ -19,7 +19,7 @@ def test_type_check_pep257_style_simple_passive():
 
         Types:
         i -- int
-        j -- int
+        j -- str
 
         Returns:
         Result of addition between `i` and `j`.
@@ -37,8 +37,8 @@ def test_type_check_pep257_style_simple_passive():
     )
     assert type_check_results["i"].result
     assert type_check_results["i"].expected == type_check_results["i"].actual
-    assert type_check_results["j"].result
-    assert type_check_results["j"].expected == type_check_results["j"].actual
+    assert not type_check_results["j"].result
+    assert type_check_results["j"].expected != type_check_results["j"].actual
 
     result = _test_func(i, j)
     type_check_returns = type_check_rtypes(parsed_docstring["rtypes"], results=[result])
@@ -54,14 +54,14 @@ def test_type_check_pep257_style_simple_passive():
 
 
 def test_type_check_epytext_style_simple_passive():
-    def _test_func(i, j) -> int:
+    def _test_func(i: str, j: int) -> int:
         """
         Function that adds two numbers and returns the result.
 
         @param i: the first number
         @type i: int
         @param j: the second number
-        @type j: int
+        @type j: str
         @return: Result of addition between `i` and `j`.
         @rtype: int
         """
@@ -75,8 +75,8 @@ def test_type_check_epytext_style_simple_passive():
     )
     assert type_check_results["i"].result
     assert type_check_results["i"].expected == type_check_results["i"].actual
-    assert type_check_results["j"].result
-    assert type_check_results["j"].expected == type_check_results["j"].actual
+    assert not type_check_results["j"].result
+    assert type_check_results["j"].expected != type_check_results["j"].actual
 
     result = _test_func(i, j)
     type_check_returns = type_check_rtypes(parsed_docstring["rtypes"], results=[result])
@@ -92,13 +92,13 @@ def test_type_check_epytext_style_simple_passive():
 
 
 def test_type_check_rest_style_simple_passive():
-    def _test_func(i, j) -> int:
+    def _test_func(i: int, j: int) -> int:
         """Function that adds two numbers and returns the result.
 
         :param i: the first number
         :type i: int
         :param j: the second number
-        :type j: int
+        :type j: str
         :return: Result of addition between `i` and `j`.
         :rtype: int
         """
@@ -112,8 +112,8 @@ def test_type_check_rest_style_simple_passive():
     )
     assert type_check_results["i"].result
     assert type_check_results["i"].expected == type_check_results["i"].actual
-    assert type_check_results["j"].result
-    assert type_check_results["j"].expected == type_check_results["j"].actual
+    assert not type_check_results["j"].result
+    assert type_check_results["j"].expected != type_check_results["j"].actual
 
     result = _test_func(i, j)
     type_check_returns = type_check_rtypes(parsed_docstring["rtypes"], results=[result])
@@ -129,7 +129,7 @@ def test_type_check_rest_style_simple_passive():
 
 
 def test_type_check_google_style_simple_passive():
-    def _test_func(i, j) -> int:
+    def _test_func(i: int, j: int) -> int:
         """Function that adds two numbers and returns the result.
 
         Args:
@@ -138,7 +138,7 @@ def test_type_check_google_style_simple_passive():
 
         Types:
             i: int
-            j: int
+            j: str
 
         Returns:
             Result of addition between `i` and `j`.
@@ -156,8 +156,8 @@ def test_type_check_google_style_simple_passive():
     )
     assert type_check_results["i"].result
     assert type_check_results["i"].expected == type_check_results["i"].actual
-    assert type_check_results["j"].result
-    assert type_check_results["j"].expected == type_check_results["j"].actual
+    assert not type_check_results["j"].result
+    assert type_check_results["j"].expected != type_check_results["j"].actual
 
     result = _test_func(i, j)
     type_check_returns = type_check_rtypes(parsed_docstring["rtypes"], results=[result])
@@ -173,14 +173,14 @@ def test_type_check_google_style_simple_passive():
 
 
 def test_type_check_numpydoc_style_simple_passive():
-    def _test_func(i, j) -> int:
+    def _test_func(i: int, j: int) -> int:
         """Function that adds two numbers and returns the result.
 
         Parameters
         ----------
         i : int
             the first number
-        j : int
+        j : str
             the second number
 
         Returns
@@ -199,8 +199,8 @@ def test_type_check_numpydoc_style_simple_passive():
         )
         assert type_check_results["i"].result
         assert type_check_results["i"].expected == type_check_results["i"].actual
-        assert type_check_results["j"].result
-        assert type_check_results["j"].expected == type_check_results["j"].actual
+        assert not type_check_results["j"].result
+        assert type_check_results["j"].expected != type_check_results["j"].actual
 
         result = _test_func(i, j)
         type_check_returns = type_check_rtypes(

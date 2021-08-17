@@ -7,8 +7,8 @@ from doc_log.parser import parse_docstring
 from doc_log.types import type_check_arguments, type_check_rtypes
 
 
-def test_type_check_pep257_style_simple_passive():
-    def _test_func(i, j=0) -> int:
+def test_type_check_pep257_style_hints_passive():
+    def _test_func(i: int, j: int = 0) -> int:
         """Function that adds two numbers and returns the result.
 
         Arguments:
@@ -17,15 +17,8 @@ def test_type_check_pep257_style_simple_passive():
         Keyword Arguments:
         j -- the second number (default 0)
 
-        Types:
-        i -- int
-        j -- int
-
         Returns:
         Result of addition between `i` and `j`.
-
-        Return Type:
-        int
         """
         return i + j
 
@@ -53,17 +46,14 @@ def test_type_check_pep257_style_simple_passive():
     assert result == 4
 
 
-def test_type_check_epytext_style_simple_passive():
-    def _test_func(i, j) -> int:
+def test_type_check_epytext_style_hints_passive():
+    def _test_func(i: int, j: int) -> int:
         """
         Function that adds two numbers and returns the result.
 
         @param i: the first number
-        @type i: int
         @param j: the second number
-        @type j: int
         @return: Result of addition between `i` and `j`.
-        @rtype: int
         """
         return i + j
 
@@ -91,16 +81,13 @@ def test_type_check_epytext_style_simple_passive():
     assert result == 4
 
 
-def test_type_check_rest_style_simple_passive():
-    def _test_func(i, j) -> int:
+def test_type_check_rest_style_hints_passive():
+    def _test_func(i: int, j: int) -> int:
         """Function that adds two numbers and returns the result.
 
         :param i: the first number
-        :type i: int
         :param j: the second number
-        :type j: int
         :return: Result of addition between `i` and `j`.
-        :rtype: int
         """
         return i + j
 
@@ -128,23 +115,16 @@ def test_type_check_rest_style_simple_passive():
     assert result == 4
 
 
-def test_type_check_google_style_simple_passive():
-    def _test_func(i, j) -> int:
+def test_type_check_google_style_hints_passive():
+    def _test_func(i: int, j: int) -> int:
         """Function that adds two numbers and returns the result.
 
         Args:
             i: the first number
             j: the second number
 
-        Types:
-            i: int
-            j: int
-
         Returns:
             Result of addition between `i` and `j`.
-
-        Return Type:
-            int
         """
         return i + j
 
@@ -172,20 +152,19 @@ def test_type_check_google_style_simple_passive():
     assert result == 4
 
 
-def test_type_check_numpydoc_style_simple_passive():
-    def _test_func(i, j) -> int:
+def test_type_check_numpydoc_style_hints_passive():
+    def _test_func(i: int, j: int) -> int:
         """Function that adds two numbers and returns the result.
 
         Parameters
         ----------
-        i : int
+        i:
             the first number
-        j : int
+        j:
             the second number
 
         Returns
         -------
-        int
             Result of addition between `i` and `j`.
         """
         return i + j

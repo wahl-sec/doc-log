@@ -28,7 +28,7 @@ def test_parse_pep257_style_simple():
         """
         return i + j
 
-    parsed_docstring = parse_docstring(_test_func.__doc__, dialect="pep257")
+    parsed_docstring = parse_docstring(_test_func, dialect="pep257")
     expected = {
         "arguments": {"i": "the first number"},
         "keywords": {"j": "the second number (default 0)"},
@@ -71,7 +71,7 @@ def test_parse_epytext_style_simple():
         """
         return i + j
 
-    parsed_docstring = parse_docstring(_test_func.__doc__, dialect="epytext")
+    parsed_docstring = parse_docstring(_test_func, dialect="epytext")
     expected = {
         "arguments": {"i": "the first number", "j": "the second number"},
         "returns": {None: "Result of addition between `i` and `j`."},
@@ -112,7 +112,7 @@ def test_parse_rest_style_simple():
         """
         return i + j
 
-    parsed_docstring = parse_docstring(_test_func.__doc__, dialect="rest")
+    parsed_docstring = parse_docstring(_test_func, dialect="rest")
     expected = {
         "arguments": {"i": "the first number", "j": "the second number"},
         "types": {"i": "int", "j": "int"},
@@ -160,7 +160,7 @@ def test_parse_google_style_simple():
         """
         return i + j
 
-    parsed_docstring = parse_docstring(_test_func.__doc__, dialect="google")
+    parsed_docstring = parse_docstring(_test_func, dialect="google")
     expected = {
         "arguments": {"i": "the first number", "j": "the second number"},
         "types": {"i": "int", "j": "int"},
@@ -207,7 +207,7 @@ def test_parse_numpydoc_style_simple():
         return i + j
 
     with pytest.raises(NotImplementedError):
-        parsed_docstring = parse_docstring(_test_func.__doc__, dialect="numpydoc")
+        parsed_docstring = parse_docstring(_test_func, dialect="numpydoc")
         expected = {
             "arguments": {"i": "the first number", "j": "the second number"},
             "types": {"i": "int", "j": "int"},
