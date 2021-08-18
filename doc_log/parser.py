@@ -4,7 +4,7 @@
 from re import compile
 from inspect import signature
 from dataclasses import dataclass
-from typing import Callable, Dict, List, Optional, Tuple, Union
+from typing import Callable, Dict, List, Optional, Tuple, Union, Any
 
 
 @dataclass
@@ -36,6 +36,7 @@ class SectionItem:
     """Describes the actual section item, that is the name (if applicable) and the value for the item."""
 
     value: str
+    _subitems: Optional[List["SectionItem"]]
     name: Optional[str] = None
 
 
@@ -122,7 +123,7 @@ def parse_docstring(_function: Callable, dialect: str) -> Dict[str, str]:
                 value = value.group().strip() if value is not None else None
 
             _collected_sections[section_indexes[index]].items.append(
-                SectionItem(value=value, name=name)
+                SectionItem(value=value, name=name, _subitems=[])
             )
 
         return _collected_sections
@@ -180,21 +181,57 @@ def parse_docstring(_function: Callable, dialect: str) -> Dict[str, str]:
         :return: The type hints if the function is inspectable.
         :rtype: Tuple[Section, Section]
         """
+
+        def _resolve_nested_type_hint(type_hint: Any, name: str = None) -> SectionItem:
+            """Recursively unwrap a nested type hint into `SectionItem` types,
+            with translated typing name.
+
+            :param type_hint: Nested type hint.
+            :type type_hint: Any
+            :param name: Name of parameter, usually the name for the initial type, defaults to None
+            :type name: str, optional
+            :return: `SectionItem` containing the nested `SectionItem` types.
+            :rtype: SectionItem
+            """
+            if hasattr(type_hint, "_name"):
+                _item = SectionItem(
+                    value=type_hint._name.lower(), name=name, _subitems=[]
+                )
+                for argument in type_hint.__args__:
+                    _item._subitems.append(_resolve_nested_type_hint(argument))
+            else:
+                return SectionItem(value=type_hint.__name__, name=name, _subitems=[])
+
+            return _item
+
         _signature = signature(_function)
 
         return_types = Section(section="rtypes", items=[])
-        if _signature.return_annotation.__name__ != "_empty":
-            # TODO: This should determine if the return type is an iterable
-            # and return each type.
+        if hasattr(_signature.return_annotation, "_name"):
             return_types.items.append(
-                SectionItem(value=_signature.return_annotation.__name__)
+                _resolve_nested_type_hint(_signature.return_annotation)
+            )
+        else:
+            return_types.items.append(
+                SectionItem(value=_signature.return_annotation.__name__, _subitems=[])
             )
 
         parameters_types = Section(section="types", items=[])
         for parameter in _signature.parameters.values():
-            parameters_types.items.append(
-                SectionItem(value=parameter.annotation.__name__, name=parameter.name)
-            )
+            if hasattr(parameter.annotation, "_name"):
+                parameters_types.items.append(
+                    _resolve_nested_type_hint(
+                        type_hint=parameter.annotation, name=parameter.name
+                    )
+                )
+            else:
+                parameters_types.items.append(
+                    SectionItem(
+                        value=parameter.annotation.__name__,
+                        name=parameter.name,
+                        _subitems=[],
+                    )
+                )
 
         return parameters_types, return_types
 
@@ -287,7 +324,8 @@ def parse_docstring(_function: Callable, dialect: str) -> Dict[str, str]:
             sections["rtypes"] = Section(
                 section="rtypes",
                 items=[
-                    SectionItem(value=section_item) for section_item in _rtypes_hints
+                    SectionItem(value=section_item, _subitems=[])
+                    for section_item in _rtypes_hints
                 ],
             )
 
