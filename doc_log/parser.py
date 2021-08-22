@@ -235,6 +235,72 @@ def parse_docstring(_function: Callable, dialect: str) -> Dict[str, str]:
 
         return parameters_types, return_types
 
+    def _parse_type_hints_docstring(types: Section) -> Section:
+        """Parse type hints from the function docstring and resolve them.
+
+        :param types: Types defined in the docstring.
+        :type types: Section
+        :return: The type hints if the function is inspectable.
+        :rtype: Section
+        """
+
+        def _resolve_type_hints(type_hint: str, name: str) -> SectionItem:
+            """Recursively search through the type hint and extract each type and it's subitems.
+
+            :param type_hint: The type hint to parse out items from.
+            :type type_hint: str
+            :param name: The name of the initial variable if applicable.
+            :type name: str
+            :return: The initial section item containing nested subitems if they exist.
+            :rtype: SectionItem
+            """
+            _container_type = compile(r"[a-zA-Z0-9\_]*(?=\[)").search(type_hint)
+            if _container_type is not None:
+                _section_item = SectionItem(
+                    value=_container_type.group().strip().lower(),
+                    name=name,
+                    _subitems=[],
+                )
+
+                _nested_types = compile(r"(?<=\[).*").search(type_hint)
+                if _nested_types is not None and _nested_types.group().endswith("]"):
+                    _nested_level, _start_index = 0, 0
+                    for index, char in enumerate(_nested_types.group()[:-1] + ","):
+                        if char == "," and _nested_level == 0:
+                            _section_item._subitems.append(
+                                _resolve_type_hints(
+                                    type_hint=_nested_types.group()[:-1][
+                                        _start_index:index
+                                    ].strip(),
+                                    name=None,
+                                )
+                            )
+                            _start_index = index + 1
+                        else:
+                            if char == "[":
+                                _nested_level += 1
+                            elif char == "]":
+                                _nested_level -= 1
+
+                else:
+                    # TODO: No nested type given for container type hint
+                    # or is badly formatted.
+                    pass
+            else:
+                _section_item = SectionItem(
+                    value=type_hint.lower(), name=name, _subitems=[]
+                )
+
+            return _section_item
+
+        _types = Section(section=types.section, items=[])
+        for section_item in types.items:
+            _types.items.append(
+                _resolve_type_hints(section_item.value, section_item.name)
+            )
+
+        return _types
+
     def _parse_multiline(
         _function: Callable,
         sections: Dict[str, SectionPattern],
@@ -274,8 +340,14 @@ def parse_docstring(_function: Callable, dialect: str) -> Dict[str, str]:
             sections=sections,
         )
 
+        if "types" in sections:
+            sections["types"] = _parse_type_hints_docstring(types=sections["types"])
+
+        if "rtypes" in sections:
+            sections["rtypes"] = _parse_type_hints_docstring(types=sections["rtypes"])
+
         parsed_parameter_type_hints, parsed_return_type_hints = _parse_type_hints(
-            _function=_function
+            _function=_function,
         )
 
         if parsed_parameter_type_hints:
@@ -304,29 +376,28 @@ def parse_docstring(_function: Callable, dialect: str) -> Dict[str, str]:
             )
 
         if parsed_return_type_hints:
-            _rtypes_hints = tuple(
-                section_item.value for section_item in parsed_return_type_hints.items
-            )
+            _return_type_hints = {
+                section_item.name: section_item
+                for section_item in parsed_return_type_hints.items
+            }
 
             if "rtypes" in sections:
-                _rtypes_hints_docstring = tuple(
-                    section_item.value for section_item in sections["rtypes"].items
-                )
+                _return_type_hints_docstring = {
+                    section.name: section for section in sections["rtypes"].items
+                }
 
-                if _rtypes_hints_docstring and not _rtypes_hints:
-                    # TODO: Add logging if a reutrn type was hinted in docstring but not provided in the function signature
-                    _rtypes_hints = _rtypes_hints_docstring
-                else:
-                    if _rtypes_hints_docstring != _rtypes_hints:
-                        # TODO: Add logging if there is a mismatch between return types provided in docstring and those hinted
-                        _rtypes_hints = _rtypes_hints_docstring
+                for parameter, section_item in _return_type_hints_docstring.items():
+                    if parameter not in _return_type_hints:
+                        # TODO: Add logging for if item is type hinted but no type was provided in function signature
+                        _return_type_hints[parameter].value = section_item.value
+                    else:
+                        if _return_type_hints[parameter].value != section_item.value:
+                            # TODO: Add logging for if type hints are mismatched in docstring and in the function signature
+                            _return_type_hints[parameter] = section_item
 
             sections["rtypes"] = Section(
                 section="rtypes",
-                items=[
-                    SectionItem(value=section_item, _subitems=[])
-                    for section_item in _rtypes_hints
-                ],
+                items=[section_item for section_item in _return_type_hints.values()],
             )
 
         return sections
