@@ -3,10 +3,10 @@
 
 import pytest
 
-from doc_log.logger import parse_docstring
+from doc_log.parser import parse_docstring
 
 
-def test_pep257_style_simple():
+def test_parse_pep257_style_simple():
     def _test_func(i, j=0) -> int:
         """Function that adds two numbers and returns the result.
 
@@ -16,16 +16,25 @@ def test_pep257_style_simple():
         Keyword Arguments:
         j -- the second number (default 0)
 
+        Types:
+        i -- int
+        j -- int
+
         Returns:
         Result of addition between `i` and `j`.
+
+        Return Type:
+        int
         """
         return i + j
 
-    parsed_docstring = parse_docstring(_test_func.__doc__, logger="pep257")
+    parsed_docstring = parse_docstring(_test_func, dialect="pep257")
     expected = {
         "arguments": {"i": "the first number"},
         "keywords": {"j": "the second number (default 0)"},
+        "types": {"i": "int", "j": "int"},
         "returns": {None: "Result of addition between `i` and `j`."},
+        "rtypes": {None: "int"},
     }
 
     assert all(
@@ -48,21 +57,26 @@ def test_pep257_style_simple():
     assert _test_func(2, 2) == 4
 
 
-def test_epytext_style_simple():
+def test_parse_epytext_style_simple():
     def _test_func(i, j) -> int:
         """
         Function that adds two numbers and returns the result.
 
         @param i: the first number
+        @type i: int
         @param j: the second number
+        @type j: int
         @return: Result of addition between `i` and `j`.
+        @rtype: int
         """
         return i + j
 
-    parsed_docstring = parse_docstring(_test_func.__doc__, logger="epytext")
+    parsed_docstring = parse_docstring(_test_func, dialect="epytext")
     expected = {
         "arguments": {"i": "the first number", "j": "the second number"},
         "returns": {None: "Result of addition between `i` and `j`."},
+        "types": {"i": "int", "j": "int"},
+        "rtypes": {None: "int"},
     }
 
     assert all(
@@ -85,7 +99,7 @@ def test_epytext_style_simple():
     assert _test_func(2, 2) == 4
 
 
-def test_rest_style_simple():
+def test_parse_rest_style_simple():
     def _test_func(i, j) -> int:
         """Function that adds two numbers and returns the result.
 
@@ -98,7 +112,7 @@ def test_rest_style_simple():
         """
         return i + j
 
-    parsed_docstring = parse_docstring(_test_func.__doc__, logger="rest")
+    parsed_docstring = parse_docstring(_test_func, dialect="rest")
     expected = {
         "arguments": {"i": "the first number", "j": "the second number"},
         "types": {"i": "int", "j": "int"},
@@ -126,7 +140,7 @@ def test_rest_style_simple():
     assert _test_func(2, 2) == 4
 
 
-def test_google_style_simple():
+def test_parse_google_style_simple():
     def _test_func(i, j) -> int:
         """Function that adds two numbers and returns the result.
 
@@ -134,15 +148,24 @@ def test_google_style_simple():
             i: the first number
             j: the second number
 
+        Types:
+            i: int
+            j: int
+
         Returns:
             Result of addition between `i` and `j`.
+
+        Return Type:
+            int
         """
         return i + j
 
-    parsed_docstring = parse_docstring(_test_func.__doc__, logger="google")
+    parsed_docstring = parse_docstring(_test_func, dialect="google")
     expected = {
         "arguments": {"i": "the first number", "j": "the second number"},
+        "types": {"i": "int", "j": "int"},
         "returns": {None: "Result of addition between `i` and `j`."},
+        "rtypes": {None: "int"},
     }
 
     assert all(
@@ -165,7 +188,7 @@ def test_google_style_simple():
     assert _test_func(2, 2) == 4
 
 
-def test_numpydoc_style_simple():
+def test_parse_numpydoc_style_simple():
     def _test_func(i, j) -> int:
         """Function that adds two numbers and returns the result.
 
@@ -184,7 +207,7 @@ def test_numpydoc_style_simple():
         return i + j
 
     with pytest.raises(NotImplementedError):
-        parsed_docstring = parse_docstring(_test_func.__doc__, logger="numpydoc")
+        parsed_docstring = parse_docstring(_test_func, dialect="numpydoc")
         expected = {
             "arguments": {"i": "the first number", "j": "the second number"},
             "types": {"i": "int", "j": "int"},

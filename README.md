@@ -9,19 +9,19 @@
 ### Parsing
 
 -   Parse docstrings based on any of the supported formats.
-    -   [✔] `PEP257`
-    -   [✔] `Epytext`
-    -   [✔] `rEST`
-    -   [✔] `Google`
+    -   [x] `PEP257`
+    -   [x] `Epytext`
+    -   [x] `rEST`
+    -   [x] `Google`
     -   [ ] `numpydoc`
 
 ### Type Checking
 
 -   Enforce runtime type checking based on the `function`/`method` docstring.
-    -   [ ] `PEP257`
-    -   [ ] `Epytext`
-    -   [ ] `rEST`
-    -   [ ] `Google`
+    -   [x] `PEP257`
+    -   [x] `Epytext`
+    -   [x] `rEST`
+    -   [x] `Google`
     -   [ ] `numpydoc`
 
 ### Logging
@@ -63,6 +63,120 @@
 <a name="examples"></a>
 
 ## Examples
+### Using `doc-log`
+
+```python
+# add_two.py
+
+from doc_log import doc_log
+
+
+@doc_log(dialect="pep257", type_check=True, active_type_check=True)
+def add_two(i):
+    """Add two (2) to a provided integer and return.
+
+    Arguments:
+    i -- the provided integer
+
+    Types:
+    i -- int
+
+    Returns:
+    Integer `i` plus two (2)
+
+    Return Type:
+    int
+    """
+    return i + 2
+
+
+print(f"{add_two(i=2)} == 4")
+```
+
+```shell
+$ python3 add_two.py
+4 == 4
+```
+
+### Invalid Type Provided
+
+```python
+# add_two.py
+
+from doc_log import doc_log
+
+
+@doc_log(dialect="pep257", type_check=True, active_type_check=True)
+def add_two(i):
+    """Add two (2) to a provided integer and return.
+
+    Arguments:
+    i -- the provided integer
+
+    Types:
+    i -- int
+
+    Returns:
+    Integer `i` plus two (2)
+
+    Return Type:
+    int
+    """
+    return i + 2
+
+
+print(f"{add_two(i='2')} == 4")
+```
+
+```shell
+$ python3 add_two.py
+Traceback (most recent call last):
+  File ".../doc-log/add_two.py", line 25, in <module>
+    print(f"{add_two(i='2')} == 4")
+  File ".../doc-log/doc_log/__init__.py", line 29, in wrapper
+    raise TypeError(
+TypeError: `i` was not of expected type: `int` was actually `str`
+```
+
+### Invalid Type Defined
+
+```python
+# add_two.py
+
+from doc_log import doc_log
+
+
+@doc_log(dialect="pep257", type_check=True, active_type_check=True)
+def add_two(i):
+    """Add two (2) to a provided integer and return.
+
+    Arguments:
+    i -- the provided integer
+
+    Types:
+    i -- str
+
+    Returns:
+    Integer `i` plus two (2)
+
+    Return Type:
+    int
+    """
+    return i + 2
+
+
+print(f"{add_two(i=2)} == 4")
+```
+
+```shell
+$ python3 add_two.py
+Traceback (most recent call last):
+  File ".../doc-log/add_two.py", line 25, in <module>
+    print(f"{add_two(i='2')} == 4")
+  File ".../doc-log/doc_log/__init__.py", line 29, in wrapper
+    raise TypeError(
+TypeError: `i` was not of expected type: `str` was actually `int`
+```
 
 ### Parsing `PEP257` Docstring
 
@@ -82,12 +196,91 @@ def add_two(i: int) -> int:
     """
     return i + 2
 
-print(parse_docstring(add_two.__doc__, logger="pep257"))
+print(parse_docstring(add_two.__doc__, dialect="pep257"))
 ```
 
 ```shell
->>> python3 add_two.py
-{'returns': Section(section='returns', items=[SectionItem(value='Integer `i` plus two (2)', name=None)]), 'arguments': Section(section='arguments', items=[SectionItem(value='the provided integer', name='i')])}
+$ python3 add_two.py
+{'arguments': Section(section='arguments', items=[SectionItem(value='the provided integer', _subitems=[], name='i')]), 'returns': Section(section='returns', items=[SectionItem(value='Integer `i` plus two (2)', _subitems=[], name=None)]), 'types': Section(section='types', items=[SectionItem(value='int', _subitems=[], name='i')]), 'rtypes': Section(section='rtypes', items=[SectionItem(value='int', _subitems=[], name=None)])}
+```
+
+### Parsing Type Hints in `PEP257` Docstring
+
+```python
+# add_two.py
+
+from doc_log.parser import parse_docstring
+
+
+def add_two(i):
+    """Add two (2) to a provided integer and return.
+
+    Arguments:
+    i -- the provided integer
+
+    Types:
+    i -- int
+
+    Returns:
+    Integer `i` plus two (2)
+
+    Return Type:
+    int
+    """
+    return i + 2
+
+
+print(parse_docstring(_function=add_two, dialect="pep257"))
+```
+
+```shell
+$ python3 add_two.py
+{'returns': Section(section='returns', items=[SectionItem(value='Integer `i` plus two (2)', _subitems=[], name=None)]), 'rtypes': Section(section='rtypes', items=[SectionItem(value='int', _subitems=[], name=None)]), 'arguments': Section(section='arguments', items=[SectionItem(value='the provided integer', _subitems=[], name='i')]), 'types': Section(section='types', items=[SectionItem(value='int', _subitems=[], name='i')])}
+```
+
+### Parse Type Check Results in `PEP257` Docstring
+
+```python
+# add_two.py
+
+from doc_log.parser import parse_docstring
+from doc_log.types import type_check_arguments, type_check_rtypes
+
+
+def add_two(i):
+    """Add two (2) to a provided integer and return the original and the result.
+
+    Arguments:
+    i -- the provided integer
+
+    Types:
+    i -- int
+
+    Returns:
+    Integer `i` plus two (2)
+
+    Return Type:
+    Tuple[int, int]
+    """
+    return (i, i + 2)
+
+
+parameters = {"i": 2}
+result = add_two(**parameters)
+docstring = parse_docstring(_function=add_two, dialect="pep257")
+
+print("Arguments ==============")
+print(type_check_arguments(docstring["types"], parameters=parameters))
+print("Return ==============")
+print(type_check_rtypes(docstring["rtypes"], results=[result]))
+```
+
+```shell
+$ python3 add_two.py
+Arguments ==============
+{'i': SectionItemTypeResult(item=SectionItem(value='int', _subitems=[], name='i'), result=True, expected='int', actual='int', _subitems=[])}
+Return ==============
+[SectionItemTypeResult(item=SectionItem(value='tuple', _subitems=[SectionItem(value='int', _subitems=[], name=None), SectionItem(value='int', _subitems=[], name=None)], name=None), result=True, expected='tuple', actual='tuple', _subitems=[SectionItemTypeResult(item=SectionItem(value='int', _subitems=[], name=None), result=True, expected='int', actual='int', _subitems=[]), SectionItemTypeResult(item=SectionItem(value='int', _subitems=[], name=None), result=True, expected='int', actual='int', _subitems=[])])]
 ```
 
 <a name="setup"></a>
