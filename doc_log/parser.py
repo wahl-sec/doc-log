@@ -39,6 +39,24 @@ class SectionItem:
     _subitems: Optional[List["SectionItem"]]
     name: Optional[str] = None
 
+    def __str__(self: "SectionItem") -> str:
+        def _unfold(items: List["SectionItem"], _result: str = "") -> str:
+            for index, item in enumerate(items):
+                if item._subitems:
+                    return f"{item.value}[{_unfold(item._subitems, _result=_result)}]"
+
+                if not _result:
+                    _result = item.value
+                else:
+                    _result = f"{_result}, {item.value}"
+
+            return _result
+
+        if self._subitems:
+            return f"{self.value}[{_unfold(self._subitems)}]"
+
+        return self.value
+
 
 @dataclass
 class Section:
@@ -366,7 +384,7 @@ def parse_docstring(_function: Callable, dialect: str) -> Dict[str, str]:
                         # TODO: Add logging for if item is type hinted but no type was provided in function signature
                         _parameter_type_hints[parameter].value = section_item.value
                     else:
-                        if _parameter_type_hints[parameter].value != section_item.value:
+                        if str(_parameter_type_hints) != str(section_item):
                             # TODO: Add logging for if type hints are mismatched in docstring and in the function signature
                             _parameter_type_hints[parameter] = section_item
 
@@ -391,7 +409,7 @@ def parse_docstring(_function: Callable, dialect: str) -> Dict[str, str]:
                         # TODO: Add logging for if item is type hinted but no type was provided in function signature
                         _return_type_hints[parameter].value = section_item.value
                     else:
-                        if _return_type_hints[parameter].value != section_item.value:
+                        if str(_return_type_hints[parameter]) != str(section_item):
                             # TODO: Add logging for if type hints are mismatched in docstring and in the function signature
                             _return_type_hints[parameter] = section_item
 
