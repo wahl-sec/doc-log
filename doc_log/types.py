@@ -21,6 +21,11 @@ class SectionItemTypeResult:
     actual: Any
     _subitems: Optional[List["SectionItemTypeResult"]]
 
+    def __str__(self: "SectionItemTypeResult") -> str:
+        return "{!s} ({}): expected: ({!s}), actual: ({!s})".format(
+            self.item, "OK" if self.result else "FAIL", self.expected, self.actual
+        )
+
 
 def _type_check_nested_type(
     item: SectionItem, value: Any

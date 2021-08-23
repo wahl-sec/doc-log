@@ -41,7 +41,7 @@ class SectionItem:
 
     def __str__(self: "SectionItem") -> str:
         def _unfold(items: List["SectionItem"], _result: str = "") -> str:
-            for index, item in enumerate(items):
+            for item in items:
                 if item._subitems:
                     return f"{item.value}[{_unfold(item._subitems, _result=_result)}]"
 
