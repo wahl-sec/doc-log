@@ -28,37 +28,19 @@
 
 -   Log `function`/`method` calls based on docstring.
 
-    -   [ ] `PEP257`
-    -   [ ] `Epytext`
-    -   [ ] `rEST`
-    -   [ ] `Google`
+    -   [x] `PEP257`
+    -   [x] `Epytext`
+    -   [x] `rEST`
+    -   [x] `Google`
     -   [ ] `numpydoc`
 
 -   Logging Information
-
-    -   Debug
-
-        -   [ ] Module that the `function`/`method` was called from.
-        -   [ ] Time of `function`/`method` call.
-        -   [ ] Passive type checking of passed parameters.
-        -   [ ] Active type checking of passed parameters and return types.
-
-    -   Info
-
-        -   [ ] Module that the `function`/`method` was called from.
-        -   [ ] Time of `function`/`method` call.
-
-    -   Error
-
-        -   [ ] Module that the `function`/`method` was called from.
-        -   [ ] Time of `function`/`method` call.
-        -   [ ] Active type checking of passed parameters and return types.
-
-    -   Warning
-
-        -   [ ] Module that the `function`/`method` was called from.
-        -   [ ] Time of `function`/`method` call.
-        -   [ ] Passive type checking of passed parameters and return types.
+    -   [ ] Module that the `function`/`method` was called from.
+    -   [ ] Time of `function`/`method` call.
+    -   [ ] Passive type checking of passed parameters.
+        - `Warning` level or below.
+    -   [ ] Active type checking of passed parameters and return types.
+        - `Error` level or above.
 
 <a name="examples"></a>
 
