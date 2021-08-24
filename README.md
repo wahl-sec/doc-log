@@ -40,11 +40,11 @@
     -   [ ] `numpydoc`
 
 -   Logging Information
-    -   [ ] Module that the `function`/`method` was called from.
-    -   [ ] Time of `function`/`method` call.
-    -   [ ] Passive type checking of passed parameters.
+    -   [x] Module that the `function`/`method` was called from.
+    -   [x] Time of `function`/`method` call.
+    -   [x] Passive type checking of passed parameters.
         - `Warning` level or below.
-    -   [ ] Active type checking of passed parameters and return types.
+    -   [x] Active type checking of passed parameters and return types.
         - `Error` level or above.
 
 <a name="examples"></a>
