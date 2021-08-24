@@ -1,5 +1,10 @@
 # doc-log
 
+<div>
+    <a href="https://github.com/psf/black"><img src="https://img.shields.io/badge/code%20style-black-000000.svg" /></a>
+    <a href="https://codecov.io/gh/wahl-sec/doc-log"><img src="https://codecov.io/gh/wahl-sec/doc-log/branch/main/graph/badge.svg?token=5WLSLYQFWP"/></a>
+</div>
+
 `doc-log` offers the ability to parse docstrings and ultimately make decisions based on parsed rules. Everything that `doc-log` can do is listed under the [Features](#features) section. Follow the steps in [Setup](#setup) to install `doc-log`. Examples and use-cases are listed under the [Examples](#examples) section.
 
 <a name="features"></a>
