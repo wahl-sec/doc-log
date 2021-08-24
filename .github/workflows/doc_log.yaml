@@ -16,7 +16,10 @@ jobs:
                 python-version: ${{ matrix.python-version }}
             - name: Build doc-log
               run: |
-                pip install pytest && pip install .
+                pip install pytest && pip install pytest-cov && pip install .
             - name: Test
               run: |
-                pytest
+                python -m pytest --cov=doc_log --cov-report xml
+            - uses: codecov/codecov-action@v2
+              with:
+                token: ${{ secrets.CODECOV_TOKEN }}

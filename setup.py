@@ -24,6 +24,6 @@ setup(
         "Topic :: Software Development :: Libraries",
     ],
     packages=["doc_log"],
-    extras_require={"dev": ["black>=21.7b0 ", "pytest>=6.2.4"]},
-    python_requires=">=3.7"
+    extras_require={"dev": ["black>=21.7b0 ", "pytest>=6.2.4", "pytest-cov>=2.12.1"]},
+    python_requires=">=3.7",
 )
