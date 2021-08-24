@@ -51,8 +51,8 @@ def test_type_check_pep257_style_nested_mixed_passive():
     _test_inner_types(type_check_results["j"])
 
     result = _test_func(i, j)
-    type_check_returns = type_check_rtypes(parsed_docstring["rtypes"], results=[result])
-    _test_inner_types(type_check_returns[0])
+    type_check_returns = type_check_rtypes(parsed_docstring["rtypes"], results=result)
+    _test_inner_types(type_check_returns)
     assert result == ((4, 5), 2)
 
 
@@ -79,8 +79,8 @@ def test_type_check_epytext_style_nested_mixed_passive():
     _test_inner_types(type_check_results["j"])
 
     result = _test_func(i, j)
-    type_check_returns = type_check_rtypes(parsed_docstring["rtypes"], results=[result])
-    _test_inner_types(type_check_returns[0])
+    type_check_returns = type_check_rtypes(parsed_docstring["rtypes"], results=result)
+    _test_inner_types(type_check_returns)
     assert result == ((4, 5), 2)
 
 
@@ -106,8 +106,8 @@ def test_type_check_rest_style_nested_mixed_passive():
     _test_inner_types(type_check_results["j"])
 
     result = _test_func(i, j)
-    type_check_returns = type_check_rtypes(parsed_docstring["rtypes"], results=[result])
-    _test_inner_types(type_check_returns[0])
+    type_check_returns = type_check_rtypes(parsed_docstring["rtypes"], results=result)
+    _test_inner_types(type_check_returns)
     assert result == ((4, 5), 2)
 
 
@@ -140,8 +140,8 @@ def test_type_check_google_style_nested_mixed_passive():
     _test_inner_types(type_check_results["j"])
 
     result = _test_func(i, j)
-    type_check_returns = type_check_rtypes(parsed_docstring["rtypes"], results=[result])
-    _test_inner_types(type_check_returns[0])
+    type_check_returns = type_check_rtypes(parsed_docstring["rtypes"], results=result)
+    _test_inner_types(type_check_returns)
     assert result == ((4, 5), 2)
 
 
@@ -183,7 +183,7 @@ def test_type_check_numpydoc_style_nested_mixed_passive():
 
         result = _test_func(i, j)
         type_check_returns = type_check_rtypes(
-            parsed_docstring["rtypes"], results=[result]
+            parsed_docstring["rtypes"], results=result
         )
-        _test_inner_types(type_check_returns[0])
+        _test_inner_types(type_check_returns)
         assert result == ((4, 5), 2)

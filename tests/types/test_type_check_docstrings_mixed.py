@@ -40,13 +40,13 @@ def test_type_check_pep257_style_mixed_passive():
     assert type_check_results["j"].expected == type_check_results["j"].actual
 
     result = _test_func(i, j)
-    type_check_returns = type_check_rtypes(parsed_docstring["rtypes"], results=[result])
-    assert len(type_check_returns) == 1
-    assert type_check_returns[0].result
+    type_check_returns = type_check_rtypes(parsed_docstring["rtypes"], results=result)
+
+    assert type_check_returns.result
     assert (
         type(result).__name__
-        == type_check_returns[0].expected
-        == type_check_returns[0].actual
+        == type_check_returns.expected
+        == type_check_returns.actual
     )
 
     assert result == 4
@@ -77,13 +77,13 @@ def test_type_check_epytext_style_mixed_passive():
     assert type_check_results["j"].expected == type_check_results["j"].actual
 
     result = _test_func(i, j)
-    type_check_returns = type_check_rtypes(parsed_docstring["rtypes"], results=[result])
-    assert len(type_check_returns) == 1
-    assert type_check_returns[0].result
+    type_check_returns = type_check_rtypes(parsed_docstring["rtypes"], results=result)
+
+    assert type_check_returns.result
     assert (
         type(result).__name__
-        == type_check_returns[0].expected
-        == type_check_returns[0].actual
+        == type_check_returns.expected
+        == type_check_returns.actual
     )
 
     assert result == 4
@@ -113,13 +113,13 @@ def test_type_check_rest_style_mixed_passive():
     assert type_check_results["j"].expected == type_check_results["j"].actual
 
     result = _test_func(i, j)
-    type_check_returns = type_check_rtypes(parsed_docstring["rtypes"], results=[result])
-    assert len(type_check_returns) == 1
-    assert type_check_returns[0].result
+    type_check_returns = type_check_rtypes(parsed_docstring["rtypes"], results=result)
+
+    assert type_check_returns.result
     assert (
         type(result).__name__
-        == type_check_returns[0].expected
-        == type_check_returns[0].actual
+        == type_check_returns.expected
+        == type_check_returns.actual
     )
 
     assert result == 4
@@ -156,13 +156,13 @@ def test_type_check_google_style_mixed_passive():
     assert type_check_results["j"].expected == type_check_results["j"].actual
 
     result = _test_func(i, j)
-    type_check_returns = type_check_rtypes(parsed_docstring["rtypes"], results=[result])
-    assert len(type_check_returns) == 1
-    assert type_check_returns[0].result
+    type_check_returns = type_check_rtypes(parsed_docstring["rtypes"], results=result)
+
+    assert type_check_returns.result
     assert (
         type(result).__name__
-        == type_check_returns[0].expected
-        == type_check_returns[0].actual
+        == type_check_returns.expected
+        == type_check_returns.actual
     )
 
     assert result == 4
@@ -208,14 +208,14 @@ def test_type_check_numpydoc_style_mixed_passive():
 
         result = _test_func(i, j)
         type_check_returns = type_check_rtypes(
-            parsed_docstring["rtypes"], results=[result]
+            parsed_docstring["rtypes"], results=result
         )
-        assert len(type_check_returns) == 1
-        assert type_check_returns[0].result
+
+        assert type_check_returns.result
         assert (
             type(result).__name__
-            == type_check_returns[0].expected
-            == type_check_returns[0].actual
+            == type_check_returns.expected
+            == type_check_returns.actual
         )
 
         assert result == 4
