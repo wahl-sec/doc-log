@@ -4,6 +4,9 @@
 from dataclasses import dataclass
 from collections.abc import Iterable
 from typing import Dict, Any, List, Tuple, Optional
+import logging
+
+LOGGER = logging.getLogger()
 
 from doc_log.parser import Section, SectionItem
 
@@ -52,6 +55,11 @@ def _type_check_nested_type(
 
     if item._subitems:
         if isinstance(value, dict):
+            LOGGER.debug(
+                "(doc-log) nested item was of type: `dict` with value: `{!s}`, type checking subitems: `{!s}`".format(
+                    value, item._subitems
+                )
+            )
             for _key in value.keys():
                 # TODO: Add check to see if item is iterable and of expected length.
                 _item_type_result, _type_check_result = _type_check_nested_type(
@@ -73,6 +81,11 @@ def _type_check_nested_type(
                 )
 
         elif isinstance(value, Iterable):
+            LOGGER.debug(
+                "(doc-log) nested item was of type: `Iterable` with value: `{!s}`, type checking subitems: `{!s}`".format(
+                    value, item._subitems
+                )
+            )
             for index, _value in enumerate(value):
                 # TODO: Add check to see if item is iterable and of expected length.
                 if len(item._subitems) > 1:
@@ -92,6 +105,11 @@ def _type_check_nested_type(
                 )
 
         else:
+            LOGGER.debug(
+                "(doc-log) nested item was of non-container type with value: `{!s}`, type checking: `{!s}`".format(
+                    value, item._subitems[0]
+                )
+            )
             item_type_result._subitems.append(
                 SectionItemTypeResult(
                     item=item._subitems[0],
@@ -125,20 +143,41 @@ def type_check_arguments(
     if types.section != "types":
         raise KeyError("provided section needs to be of type: `types`")
 
-    type_check_results = {parameter: None for parameter in parameters}
+    _consumed = set()
+    type_check_results = {
+        parameter: SectionItemTypeResult(
+            item=None, result=False, expected=Any, actual=None, _subitems=[]
+        )
+        for parameter in parameters
+    }
     for section_item in types.items:
         if section_item.name not in parameters:
-            # TODO: Add some warning for if parameters provided and the ones
-            # defined in `types` section differ in either direction.
+            # TODO: Don't warn if the parameter is optional.
+            LOGGER.warning(
+                "(doc-log) parameter: `{!s}` was type hinted, but not provided as a parameter.".format(
+                    section_item.name
+                )
+            )
             continue
 
+        _consumed.add(section_item.name)
         if section_item._subitems:
+            LOGGER.debug(
+                "(doc-log) item: `{!s}` is nested, type checking subitems".format(
+                    section_item
+                )
+            )
             _section_item, type_check_results_total = _type_check_nested_type(
                 section_item, value=parameters[section_item.name]
             )
             type_check_results[section_item.name] = _section_item
             type_check_results[section_item.name].result = type_check_results_total
         else:
+            LOGGER.debug(
+                "(doc-log) item: `{!s}` is not nested, type checking directly against value: `{!r}`".format(
+                    section_item, parameters[section_item.name]
+                )
+            )
             _parameter_type = type(parameters[section_item.name]).__name__
             type_check_results[section_item.name] = SectionItemTypeResult(
                 item=section_item,
@@ -148,12 +187,17 @@ def type_check_arguments(
                 _subitems=[],
             )
 
+    if len(_consumed) != len(parameters):
+        LOGGER.warning(
+            "(doc-log) parameters that were not type hinted was passed, consumed: `{!s}`, passed: `{!s}`".format(
+                ", ".join(_consumed), ", ".join(parameters)
+            )
+        )
+
     return type_check_results
 
 
-def type_check_rtypes(
-    rtypes: Section, results: List[Any]
-) -> Tuple[SectionItemTypeResult]:
+def type_check_rtypes(rtypes: Section, results: Any) -> Tuple[SectionItemTypeResult]:
     """Check return types for the given section to the actual types of the output.
 
     :param rtypes: The parsed docstring section for `rtypes`.
@@ -167,30 +211,36 @@ def type_check_rtypes(
     if rtypes.section != "rtypes":
         raise KeyError("Provided section needs to be of type: `rtypes`")
 
-    if len(rtypes.items) != len(results):
-        # TODO: Add some warning for if parameters provided and the ones
-        # defined in `rtypes` section differ in either direction.
-        pass
+    type_check_results = SectionItemTypeResult(
+        item=None, result=False, expected=Any, actual=None, _subitems=[]
+    )
 
-    type_check_results = list()
-    for index_o, section_item in enumerate(rtypes.items):
+    for section_item in rtypes.items:
         if section_item._subitems:
+            LOGGER.debug(
+                "(doc-log) return type: `{!s}` is nested, type checking subitems".format(
+                    section_item
+                )
+            )
             _section_item, type_check_results_total = _type_check_nested_type(
-                section_item, value=results[index_o]
+                section_item, value=results
             )
 
             _section_item.result = type_check_results_total
-            type_check_results.append(_section_item)
+            type_check_results = _section_item
         else:
-            _parameter_type = type(results[index_o]).__name__
-            type_check_results.append(
-                SectionItemTypeResult(
-                    item=section_item,
-                    result=_parameter_type == section_item.value,
-                    expected=section_item.value,
-                    actual=_parameter_type,
-                    _subitems=[],
+            LOGGER.debug(
+                "(doc-log) return type: `{!s}` is not nested, type checking directly against value: `{!r}`".format(
+                    section_item, results
                 )
+            )
+            _parameter_type = type(results).__name__
+            type_check_results = SectionItemTypeResult(
+                item=section_item,
+                result=_parameter_type == section_item.value,
+                expected=section_item.value,
+                actual=_parameter_type,
+                _subitems=[],
             )
 
     return type_check_results

@@ -71,7 +71,7 @@
 from doc_log import doc_log
 
 
-@doc_log(dialect="pep257", type_check=True, active_type_check=True)
+@doc_log(dialect="pep257", type_check=True, _active_type_check=True)
 def add_two(i):
     """Add two (2) to a provided integer and return.
 
@@ -106,7 +106,7 @@ $ python3 add_two.py
 from doc_log import doc_log
 
 
-@doc_log(dialect="pep257", type_check=True, active_type_check=True)
+@doc_log(dialect="pep257", type_check=True, _active_type_check=True)
 def add_two(i):
     """Add two (2) to a provided integer and return.
 
@@ -146,7 +146,7 @@ TypeError: `i` was not of expected type: `int` was actually `str`
 from doc_log import doc_log
 
 
-@doc_log(dialect="pep257", type_check=True, active_type_check=True)
+@doc_log(dialect="pep257", type_check=True, _active_type_check=True)
 def add_two(i):
     """Add two (2) to a provided integer and return.
 
@@ -176,6 +176,195 @@ Traceback (most recent call last):
   File ".../doc-log/doc_log/__init__.py", line 29, in wrapper
     raise TypeError(
 TypeError: `i` was not of expected type: `str` was actually `int`
+```
+
+### Logging With Type Check
+
+```python
+# add_two.py
+
+from logging import INFO, getLogger, basicConfig
+
+basicConfig(format="%(levelname)s :: %(asctime)s :: %(message)s", level=INFO)
+logger = getLogger(__name__)
+
+from doc_log import doc_log
+
+
+@doc_log(dialect="pep257", type_check=True)
+def add_two(i, j=None):
+    """Add two (2) to a provided integer and return.
+
+    Arguments:
+    i -- the provided integer
+
+    Types:
+    i -- int
+
+    Returns:
+    Integer `i` plus two (2)
+
+    Return Type:
+    int
+    """
+    logger.info("parameter: `i` is {!s}".format(i))
+    return i + 2
+
+
+print(f"{add_two(i=2, j=3)} == 4")
+```
+
+```shell
+$ python3 add_two.py
+WARNING :: 2021-08-24 10:05:18,409 :: (doc-log) parameter: `i` was type hinted in docstring but not in signature.
+WARNING :: 2021-08-24 10:05:18,409 :: (doc-log) return type was type hinted in docstring: `int` but not in signature.
+WARNING :: 2021-08-24 10:05:18,412 :: (doc-log) parameters that were not type hinted was passed, consumed: `i`, passed: `i, j`
+WARNING :: 2021-08-24 10:05:18,412 :: (doc-log) parameter: `j` was not of expected type: `typing.Any` was actually `None`
+INFO :: 2021-08-24 10:05:18,412 :: (doc-log) function: `add_two` called from `.../doc-log/add_two.py` at: `2021-08-24T10:05:18.412107`
+INFO :: 2021-08-24 10:05:18,412 :: parameter: `i` is 2
+4 == 4
+```
+
+### Logging With Type Check (Error)
+
+```python
+# add_two.py
+
+from logging import ERROR, getLogger, basicConfig
+
+basicConfig(format="%(levelname)s :: %(asctime)s :: %(message)s", level=ERROR)
+logger = getLogger(__name__)
+
+from doc_log import doc_log
+
+
+@doc_log(dialect="pep257", type_check=True)
+def add_two(i, j=None):
+    """Add two (2) to a provided integer and return.
+
+    Arguments:
+    i -- the provided integer
+
+    Types:
+    i -- int
+
+    Returns:
+    Integer `i` plus two (2)
+
+    Return Type:
+    int
+    """
+    logger.info("parameter: `i` is {!s}".format(i))
+    return i + 2
+
+
+print(f"{add_two(i=2, j=3)} == 4")
+```
+
+```shell
+$ python3 add_two.py
+Traceback (most recent call last):
+  File ".../doc-log/add_two.py", line 33, in <module>
+    print(f"{add_two(i=2, j=3)} == 4")
+  File ".../doc-log/doc_log/__init__.py", line 45, in wrapper
+    raise TypeError(
+TypeError: `(doc-log) parameter: j` was not of expected type: `typing.Any` was actually `None`
+```
+
+### Logging With Type Check (Debug)
+
+```python
+# add_two.py
+
+from logging import DEBUG, getLogger, basicConfig
+
+basicConfig(format="%(levelname)s :: %(asctime)s :: %(message)s", level=DEBUG)
+logger = getLogger(__name__)
+
+from doc_log import doc_log
+
+
+@doc_log(dialect="pep257", type_check=True)
+def add_two(i, j=None):
+    """Add two (2) to a provided integer and return.
+
+    Arguments:
+    i -- the provided integer
+
+    Types:
+    i -- int
+
+    Returns:
+    Integer `i` plus two (2)
+
+    Return Type:
+    int
+    """
+    logger.info("parameter: `i` is {!s}".format(i))
+    return i + 2
+
+
+print(f"{add_two(i=2, j=3)} == 4")
+```
+
+```shell
+$ python3 add_two.py
+DEBUG :: 2021-08-24 10:08:51,123 :: (doc-log) parsing docstring with dialect: `pep257` from function: `add_two` in `.../doc-log/add_two.py`
+DEBUG :: 2021-08-24 10:08:51,128 :: (doc-log) parsed sections: `['rtypes', 'types', 'returns', 'arguments']` from function: `add_two` in `.../doc-log/add_two.py`
+WARNING :: 2021-08-24 10:08:51,130 :: (doc-log) parameter: `i` was type hinted in docstring but not in signature.
+WARNING :: 2021-08-24 10:08:51,130 :: (doc-log) return type was type hinted in docstring: `int` but not in signature.
+DEBUG :: 2021-08-24 10:08:51,130 :: (doc-log) item: `int` is not nested, type checking directly against value: `2`
+WARNING :: 2021-08-24 10:08:51,130 :: (doc-log) parameters that were not type hinted was passed, consumed: `i`, passed: `i, j`
+WARNING :: 2021-08-24 10:08:51,131 :: (doc-log) parameter: `j` was not of expected type: `typing.Any` was actually `None`
+INFO :: 2021-08-24 10:08:51,131 :: (doc-log) function: `add_two` called from `.../doc-log/add_two.py` at: `2021-08-24T10:08:51.131467`
+DEBUG :: 2021-08-24 10:08:51,131 :: (doc-log) function: `add_two` was passed arguments: `()` and keyword arguments: `{'i': 2, 'j': 3}`
+INFO :: 2021-08-24 10:08:51,131 :: parameter: `i` is 2
+DEBUG :: 2021-08-24 10:08:51,131 :: (doc-log) return type: `int` is not nested, type checking directly against value: `4`
+4 == 4
+```
+
+### Logging Without Type Check
+
+```python
+# add_two.py
+
+from logging import INFO, getLogger, basicConfig
+
+basicConfig(format="%(levelname)s :: %(asctime)s :: %(message)s", level=INFO)
+logger = getLogger(__name__)
+
+from doc_log import doc_log
+
+
+@doc_log(dialect="pep257", type_check=False)
+def add_two(i, j=None):
+    """Add two (2) to a provided integer and return.
+
+    Arguments:
+    i -- the provided integer
+
+    Types:
+    i -- int
+
+    Returns:
+    Integer `i` plus two (2)
+
+    Return Type:
+    int
+    """
+    logger.info("parameter: `i` is {!s}".format(i))
+    return i + 2
+
+
+print(f"{add_two(i=2, j=3)} == 4")
+```
+
+```shell
+$ python3 add_two.py
+WARNING :: 2021-08-24 10:10:54,760 :: (doc-log) parameter: `i` was type hinted in docstring but not in signature.
+WARNING :: 2021-08-24 10:10:54,760 :: (doc-log) return type was type hinted in docstring: `int` but not in signature.
+INFO :: 2021-08-24 10:10:54,761 :: parameter: `i` is 2
+4 == 4
 ```
 
 ### Parsing `PEP257` Docstring
@@ -272,7 +461,7 @@ docstring = parse_docstring(_function=add_two, dialect="pep257")
 print("Arguments ==============")
 print(type_check_arguments(docstring["types"], parameters=parameters))
 print("Return ==============")
-print(type_check_rtypes(docstring["rtypes"], results=[result]))
+print(type_check_rtypes(docstring["rtypes"], results=result))
 ```
 
 ```shell

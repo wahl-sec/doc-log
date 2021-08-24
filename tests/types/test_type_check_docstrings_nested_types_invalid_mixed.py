@@ -50,15 +50,15 @@ def test_type_check_pep257_style_nested_invalid_mixed_passive():
     ) == [(False, "str", "int"), (False, "str", "int")]
 
     result = _test_func(i, j)
-    type_check_returns = type_check_rtypes(parsed_docstring["rtypes"], results=[result])
-    assert not type_check_returns[0].result
+    type_check_returns = type_check_rtypes(parsed_docstring["rtypes"], results=result)
+    assert not type_check_returns.result
     assert list(
         (item.result, item.expected, item.actual)
-        for item in type_check_returns[0]._subitems
+        for item in type_check_returns._subitems
     ) == [(True, "tuple", "tuple"), (False, "str", "int")]
     assert list(
         (item.result, item.expected, item.actual)
-        for item in type_check_returns[0]._subitems[0]._subitems
+        for item in type_check_returns._subitems[0]._subitems
     ) == [(False, "str", "int"), (False, "str", "int")]
 
     assert result == ((4, 5), 2)
@@ -97,22 +97,22 @@ def test_type_check_epytext_style_nested_invalid_mixed_passive():
     ) == [(False, "str", "int"), (False, "str", "int")]
 
     result = _test_func(i, j)
-    type_check_returns = type_check_rtypes(parsed_docstring["rtypes"], results=[result])
-    assert not type_check_returns[0].result
+    type_check_returns = type_check_rtypes(parsed_docstring["rtypes"], results=result)
+    assert not type_check_returns.result
     assert list(
         (item.result, item.expected, item.actual)
-        for item in type_check_returns[0]._subitems
+        for item in type_check_returns._subitems
     ) == [(True, "tuple", "tuple"), (False, "str", "int")]
     assert list(
         (item.result, item.expected, item.actual)
-        for item in type_check_returns[0]._subitems[0]._subitems
+        for item in type_check_returns._subitems[0]._subitems
     ) == [(False, "str", "int"), (False, "str", "int")]
 
     assert result == ((4, 5), 2)
 
 
 def test_type_check_rest_style_nested_invalid_mixed_passive():
-    def _test_func(i: Dict[str, int], j: List[int]=0) -> Tuple[Tuple[int, int], int]:
+    def _test_func(i: Dict[str, int], j: List[int] = 0) -> Tuple[Tuple[int, int], int]:
         """Function that adds two numbers and returns the result.
 
         :param i: the first number
@@ -143,22 +143,22 @@ def test_type_check_rest_style_nested_invalid_mixed_passive():
     ) == [(False, "str", "int"), (False, "str", "int")]
 
     result = _test_func(i, j)
-    type_check_returns = type_check_rtypes(parsed_docstring["rtypes"], results=[result])
-    assert not type_check_returns[0].result
+    type_check_returns = type_check_rtypes(parsed_docstring["rtypes"], results=result)
+    assert not type_check_returns.result
     assert list(
         (item.result, item.expected, item.actual)
-        for item in type_check_returns[0]._subitems
+        for item in type_check_returns._subitems
     ) == [(True, "tuple", "tuple"), (False, "str", "int")]
     assert list(
         (item.result, item.expected, item.actual)
-        for item in type_check_returns[0]._subitems[0]._subitems
+        for item in type_check_returns._subitems[0]._subitems
     ) == [(False, "str", "int"), (False, "str", "int")]
 
     assert result == ((4, 5), 2)
 
 
 def test_type_check_google_style_nested_invalid_mixed_passive():
-    def _test_func(i: Dict[str, int], j: List[int]=0) -> Tuple[Tuple[int, int], int]:
+    def _test_func(i: Dict[str, int], j: List[int] = 0) -> Tuple[Tuple[int, int], int]:
         """Function that adds two numbers and returns the result.
 
         Args:
@@ -196,22 +196,22 @@ def test_type_check_google_style_nested_invalid_mixed_passive():
     ) == [(False, "str", "int"), (False, "str", "int")]
 
     result = _test_func(i, j)
-    type_check_returns = type_check_rtypes(parsed_docstring["rtypes"], results=[result])
-    assert not type_check_returns[0].result
+    type_check_returns = type_check_rtypes(parsed_docstring["rtypes"], results=result)
+    assert not type_check_returns.result
     assert list(
         (item.result, item.expected, item.actual)
-        for item in type_check_returns[0]._subitems
+        for item in type_check_returns._subitems
     ) == [(True, "tuple", "tuple"), (False, "str", "int")]
     assert list(
         (item.result, item.expected, item.actual)
-        for item in type_check_returns[0]._subitems[0]._subitems
+        for item in type_check_returns._subitems[0]._subitems
     ) == [(False, "str", "int"), (False, "str", "int")]
 
     assert result == ((4, 5), 2)
 
 
 def test_type_check_numpydoc_style_nested_invalid_mixed_passive():
-    def _test_func(i: Dict[str, int], j: List[int]=0) -> Tuple[Tuple[int, int], int]:
+    def _test_func(i: Dict[str, int], j: List[int] = 0) -> Tuple[Tuple[int, int], int]:
         """Function that adds two numbers and returns the result.
 
         Parameters
@@ -258,15 +258,17 @@ def test_type_check_numpydoc_style_nested_invalid_mixed_passive():
         ) == [(False, "str", "int"), (False, "str", "int")]
 
         result = _test_func(i, j)
-        type_check_returns = type_check_rtypes(parsed_docstring["rtypes"], results=[result])
-        assert not type_check_returns[0].result
+        type_check_returns = type_check_rtypes(
+            parsed_docstring["rtypes"], results=result
+        )
+        assert not type_check_returns.result
         assert list(
             (item.result, item.expected, item.actual)
-            for item in type_check_returns[0]._subitems
+            for item in type_check_returns._subitems
         ) == [(True, "tuple", "tuple"), (False, "str", "int")]
         assert list(
             (item.result, item.expected, item.actual)
-            for item in type_check_returns[0]._subitems[0]._subitems
+            for item in type_check_returns._subitems[0]._subitems
         ) == [(False, "str", "int"), (False, "str", "int")]
 
         assert result == ((4, 5), 2)
