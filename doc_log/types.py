@@ -128,20 +128,41 @@ def _type_check_nested_type(
 
 def type_check_arguments(
     types: Section,
-    parameters: Dict[str, Any],
+    parameters: Dict[str, Any] = {},
+    arguments: Tuple[Any] = (),
 ) -> Dict[str, SectionItemTypeResult]:
     """Check argument types for the given section to the actual types of the parameters.
 
     :param types: The parsed docstring section for `types`.
     :type types: Section
-    :param parameters: The parameters to be checked.
-    :type parameters: Dict[str, Any]
+    :param parameters: The keyword arguments to be checked.
+    :type parameters: Dict[str, Any], optional
+    :param arguments: The arguments to be checked.
+    :type arguments: Tuple[Any]
     :raises KeyError: If the `types` section is not provided as an argument.
     :return: The results for the parameter types.
     :rtype: Dict[str, SectionItemTypeResult]
     """
     if types.section != "types":
-        raise KeyError("provided section needs to be of type: `types`")
+        raise KeyError("(doc-log) provided section needs to be of type: `types`")
+
+    if arguments:
+        for index, section_item in enumerate(
+            [
+                _section_item
+                for _section_item in types.items
+                if _section_item.name not in parameters
+            ]
+        ):
+            if index >= len(arguments):
+                break
+
+            LOGGER.warning(
+                "(doc-log) argument was passed as non-keyword guessing: {!s} := {!r}".format(
+                    section_item.name, arguments[index]
+                )
+            )
+            parameters[section_item.name] = arguments[index]
 
     _consumed = set()
     type_check_results = {

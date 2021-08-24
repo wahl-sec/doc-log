@@ -33,7 +33,9 @@ def doc_log(
                 if type_check:
                     if "types" in rules:
                         _type_check_arguments_results = type_check_arguments(
-                            types=rules["types"], parameters=kwargs
+                            types=rules["types"],
+                            arguments=args,
+                            parameters=kwargs.copy(),  # A copy is necessary as this might be modified.
                         )
 
                         for (
@@ -74,7 +76,6 @@ def doc_log(
                             func.__name__, args, kwargs
                         )
                     )
-
                 _function_return_value = func(*args, **kwargs)
 
                 if type_check:

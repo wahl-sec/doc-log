@@ -259,9 +259,6 @@ def parse_docstring(_function: Callable, dialect: str) -> Dict[str, str]:
                     )
                 )
             else:
-                if parameter.annotation == _empty:
-                    continue
-
                 parameters_types.items.append(
                     SectionItem(
                         value=parameter.annotation.__name__,
