@@ -22,7 +22,7 @@
 
 ### Type Checking
 
--   Enforce runtime type checking based on the `function`/`method` docstring.
+-   Enforce runtime type checking based on the `function`/`method` docstring. Supports almost all of the types offered by the standard library [typing](https://docs.python.org/3/library/typing.html).
     -   [x] `PEP257`
     -   [x] `Epytext`
     -   [x] `rEST`

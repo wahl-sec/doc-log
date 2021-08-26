@@ -27,10 +27,13 @@ def test_wrapper_pep257_style_invalid_active():
         Return Type:
         int
         """
-        return i + j
+        return str(i + j)
 
     with pytest.raises(TypeError):
         assert _test_func("2") == 2
+
+    with pytest.raises(TypeError):
+        assert _test_func(2) == 2
 
 
 def test_wrapper_epytext_style_invalid_active():
@@ -46,10 +49,13 @@ def test_wrapper_epytext_style_invalid_active():
         @return: Result of addition between `i` and `j`.
         @rtype: int
         """
-        return i + j
+        return str(i + j)
 
     with pytest.raises(TypeError):
         assert _test_func("2") == 2
+
+    with pytest.raises(TypeError):
+        assert _test_func(2) == 2
 
 
 def test_wrapper_rest_style_invalid_active():
@@ -64,10 +70,13 @@ def test_wrapper_rest_style_invalid_active():
         :return: Result of addition between `i` and `j`.
         :rtype: int
         """
-        return i + j
+        return str(i + j)
 
     with pytest.raises(TypeError):
         assert _test_func("2") == 2
+
+    with pytest.raises(TypeError):
+        assert _test_func(2) == 2
 
 
 def test_wrapper_google_style_invalid_active():
@@ -89,10 +98,13 @@ def test_wrapper_google_style_invalid_active():
         Return Type:
             int
         """
-        return i + j
+        return str(i + j)
 
     with pytest.raises(TypeError):
         assert _test_func("2") == 2
+
+    with pytest.raises(TypeError):
+        assert _test_func(2) == 2
 
 
 def test_wrapper_numpydoc_style_invalid_active():
@@ -112,7 +124,11 @@ def test_wrapper_numpydoc_style_invalid_active():
         int
             Result of addition between `i` and `j`.
         """
-        return i + j
+        return str(i + j)
 
     with pytest.raises(NotImplementedError):
-        assert _test_func(2) == 2
+        with pytest.raises(TypeError):
+            assert _test_func("2") == 2
+
+        with pytest.raises(TypeError):
+            assert _test_func(2) == 2
