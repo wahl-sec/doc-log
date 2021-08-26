@@ -82,6 +82,9 @@ print(f"{add_two(i=2)} == 4")
 
 ```shell
 $ python3 add_two.py
+WARNING :: 2021-08-26 17:59:19,622 :: (doc-log) parameter: `i` had different type hints in the docstring and in the signature, signature: `_empty` / docstring: `int`
+WARNING :: 2021-08-26 17:59:19,622 :: (doc-log) return type had different type hints in the docstring and in the signature, signature: `_empty` / docstring: `int`
+INFO :: 2021-08-26 17:59:19,622 :: (doc-log) function: `add_two` called from `.../doc-log/add_two.py` at: `2021-08-26T17:59:19.622428`
 4 == 4
 ```
 
@@ -117,12 +120,14 @@ print(f"{add_two(i='2')} == 4")
 
 ```shell
 $ python3 add_two.py
+WARNING :: 2021-08-26 18:00:32,297 :: (doc-log) parameter: `i` had different type hints in the docstring and in the signature, signature: `_empty` / docstring: `int`
+WARNING :: 2021-08-26 18:00:32,298 :: (doc-log) return type had different type hints in the docstring and in the signature, signature: `_empty` / docstring: `int`
 Traceback (most recent call last):
   File ".../doc-log/add_two.py", line 25, in <module>
     print(f"{add_two(i='2')} == 4")
-  File ".../doc-log/doc_log/__init__.py", line 29, in wrapper
+  File ".../doc-log/doc_log/__init__.py", line 47, in wrapper
     raise TypeError(
-TypeError: `i` was not of expected type: `int` was actually `str`
+TypeError: (doc-log) parameter: `i` was not of expected type: `int` was actually `str`
 ```
 
 ### Invalid Type Defined
@@ -157,12 +162,14 @@ print(f"{add_two(i=2)} == 4")
 
 ```shell
 $ python3 add_two.py
+WARNING :: 2021-08-26 18:01:42,012 :: (doc-log) parameter: `i` had different type hints in the docstring and in the signature, signature: `_empty` / docstring: `str`
+WARNING :: 2021-08-26 18:01:42,012 :: (doc-log) return type had different type hints in the docstring and in the signature, signature: `_empty` / docstring: `int`
 Traceback (most recent call last):
   File ".../doc-log/add_two.py", line 25, in <module>
-    print(f"{add_two(i='2')} == 4")
-  File ".../doc-log/doc_log/__init__.py", line 29, in wrapper
+    print(f"{add_two(i=2)} == 4")
+  File ".../doc-log/doc_log/__init__.py", line 47, in wrapper
     raise TypeError(
-TypeError: `i` was not of expected type: `str` was actually `int`
+TypeError: (doc-log) parameter: `i` was not of expected type: `str` was actually `int`
 ```
 
 ### Logging With Type Check
@@ -203,12 +210,11 @@ print(f"{add_two(i=2, j=3)} == 4")
 
 ```shell
 $ python3 add_two.py
-WARNING :: 2021-08-24 10:05:18,409 :: (doc-log) parameter: `i` was type hinted in docstring but not in signature.
-WARNING :: 2021-08-24 10:05:18,409 :: (doc-log) return type was type hinted in docstring: `int` but not in signature.
-WARNING :: 2021-08-24 10:05:18,412 :: (doc-log) parameters that were not type hinted was passed, consumed: `i`, passed: `i, j`
-WARNING :: 2021-08-24 10:05:18,412 :: (doc-log) parameter: `j` was not of expected type: `typing.Any` was actually `None`
-INFO :: 2021-08-24 10:05:18,412 :: (doc-log) function: `add_two` called from `.../doc-log/add_two.py` at: `2021-08-24T10:05:18.412107`
-INFO :: 2021-08-24 10:05:18,412 :: parameter: `i` is 2
+WARNING :: 2021-08-26 18:02:22,557 :: (doc-log) parameter: `i` had different type hints in the docstring and in the signature, signature: `_empty` / docstring: `int`
+WARNING :: 2021-08-26 18:02:22,557 :: (doc-log) return type had different type hints in the docstring and in the signature, signature: `_empty` / docstring: `int`
+WARNING :: 2021-08-26 18:02:22,557 :: (doc-log) parameter: `j` was not of expected type: `_empty` was actually `int`
+INFO :: 2021-08-26 18:02:22,557 :: (doc-log) function: `add_two` called from `.../doc-log/add_two.py` at: `2021-08-26T18:02:22.557248`
+INFO :: 2021-08-26 18:02:22,557 :: parameter: `i` is 2
 4 == 4
 ```
 
@@ -251,11 +257,11 @@ print(f"{add_two(i=2, j=3)} == 4")
 ```shell
 $ python3 add_two.py
 Traceback (most recent call last):
-  File ".../doc-log/add_two.py", line 33, in <module>
+  File ".../doc-log/add_two.py", line 31, in <module>
     print(f"{add_two(i=2, j=3)} == 4")
-  File ".../doc-log/doc_log/__init__.py", line 45, in wrapper
+  File ".../doc-log/doc_log/__init__.py", line 47, in wrapper
     raise TypeError(
-TypeError: `(doc-log) parameter: j` was not of expected type: `typing.Any` was actually `None`
+TypeError: (doc-log) parameter: `j` was not of expected type: `_empty` was actually `int`
 ```
 
 ### Logging With Type Check (Debug)
@@ -296,17 +302,19 @@ print(f"{add_two(i=2, j=3)} == 4")
 
 ```shell
 $ python3 add_two.py
-DEBUG :: 2021-08-24 10:08:51,123 :: (doc-log) parsing docstring with dialect: `pep257` from function: `add_two` in `.../doc-log/add_two.py`
-DEBUG :: 2021-08-24 10:08:51,128 :: (doc-log) parsed sections: `['rtypes', 'types', 'returns', 'arguments']` from function: `add_two` in `.../doc-log/add_two.py`
-WARNING :: 2021-08-24 10:08:51,130 :: (doc-log) parameter: `i` was type hinted in docstring but not in signature.
-WARNING :: 2021-08-24 10:08:51,130 :: (doc-log) return type was type hinted in docstring: `int` but not in signature.
-DEBUG :: 2021-08-24 10:08:51,130 :: (doc-log) item: `int` is not nested, type checking directly against value: `2`
-WARNING :: 2021-08-24 10:08:51,130 :: (doc-log) parameters that were not type hinted was passed, consumed: `i`, passed: `i, j`
-WARNING :: 2021-08-24 10:08:51,131 :: (doc-log) parameter: `j` was not of expected type: `typing.Any` was actually `None`
-INFO :: 2021-08-24 10:08:51,131 :: (doc-log) function: `add_two` called from `.../doc-log/add_two.py` at: `2021-08-24T10:08:51.131467`
-DEBUG :: 2021-08-24 10:08:51,131 :: (doc-log) function: `add_two` was passed arguments: `()` and keyword arguments: `{'i': 2, 'j': 3}`
-INFO :: 2021-08-24 10:08:51,131 :: parameter: `i` is 2
-DEBUG :: 2021-08-24 10:08:51,131 :: (doc-log) return type: `int` is not nested, type checking directly against value: `4`
+DEBUG :: 2021-08-26 18:03:45,160 :: (doc-log) parsing docstring with dialect: `pep257` from function: `add_two` in `.../doc-log/add_two.py`
+DEBUG :: 2021-08-26 18:03:45,160 :: (doc-log) parsed sections: `['returns', 'arguments', 'types', 'rtypes']` from function: `add_two` in `.../doc-log/add_two.py`
+WARNING :: 2021-08-26 18:03:45,207 :: (doc-log) parameter: `i` had different type hints in the docstring and in the signature, signature: `_empty` / docstring: `int`
+WARNING :: 2021-08-26 18:03:45,207 :: (doc-log) return type had different type hints in the docstring and in the signature, signature: `_empty` / docstring: `int`
+DEBUG :: 2021-08-26 18:03:45,207 :: (doc-log) item: `int` is not nested, type checking directly against value: `2`
+DEBUG :: 2021-08-26 18:03:45,207 :: (doc-log) item: `_empty` is not nested, type checking directly against value: `3`
+DEBUG :: 2021-08-26 18:03:45,207 :: (doc-log) type check arguments results was: `{'i': SectionItemTypeResult(item=SectionItem(value='int', _subitems=[], name='i'), result=True, expected='int', actual='int', _subitems=[]), 'j': SectionItemTypeResult(item=SectionItem(value='_empty', _subitems=[], name='j'), result=False, expected='_empty', actual='int', _subitems=[])}`
+WARNING :: 2021-08-26 18:03:45,207 :: (doc-log) parameter: `j` was not of expected type: `_empty` was actually `int`
+INFO :: 2021-08-26 18:03:45,207 :: (doc-log) function: `add_two` called from `.../doc-log/add_two.py` at: `2021-08-26T18:03:45.207408`
+DEBUG :: 2021-08-26 18:03:45,207 :: (doc-log) function: `add_two` was passed arguments: `()` and keyword arguments: `{'i': 2, 'j': 3}`
+INFO :: 2021-08-26 18:03:45,207 :: parameter: `i` is 2
+DEBUG :: 2021-08-26 18:03:45,207 :: (doc-log) return type: `int` is not nested, type checking directly against value: `4`
+DEBUG :: 2021-08-26 18:03:45,207 :: (doc-log) type check return results was: `SectionItemTypeResult(item=SectionItem(value='int', _subitems=[], name=None), result=True, expected='int', actual='int', _subitems=[])`
 4 == 4
 ```
 
@@ -348,9 +356,9 @@ print(f"{add_two(i=2, j=3)} == 4")
 
 ```shell
 $ python3 add_two.py
-WARNING :: 2021-08-24 10:10:54,760 :: (doc-log) parameter: `i` was type hinted in docstring but not in signature.
-WARNING :: 2021-08-24 10:10:54,760 :: (doc-log) return type was type hinted in docstring: `int` but not in signature.
-INFO :: 2021-08-24 10:10:54,761 :: parameter: `i` is 2
+WARNING :: 2021-08-26 18:04:42,358 :: (doc-log) parameter: `i` had different type hints in the docstring and in the signature, signature: `_empty` / docstring: `int`
+WARNING :: 2021-08-26 18:04:42,358 :: (doc-log) return type had different type hints in the docstring and in the signature, signature: `_empty` / docstring: `int`
+INFO :: 2021-08-26 18:04:42,358 :: parameter: `i` is 2
 4 == 4
 ```
 
@@ -372,11 +380,13 @@ def add_two(i: int) -> int:
     """
     return i + 2
 
-print(parse_docstring(add_two.__doc__, dialect="pep257"))
+print(parse_docstring(add_two, dialect="pep257"))
 ```
 
 ```shell
 $ python3 add_two.py
+WARNING :: 2021-08-26 18:11:54,024 :: (doc-log) parameter: `i` had different type hints in the docstring and in the signature, signature: `int` / docstring: `_empty`
+WARNING :: 2021-08-26 18:11:54,024 :: (doc-log) return type had different type hints in the docstring and in the signature, signature: `int` / docstring: `_empty`
 {'arguments': Section(section='arguments', items=[SectionItem(value='the provided integer', _subitems=[], name='i')]), 'returns': Section(section='returns', items=[SectionItem(value='Integer `i` plus two (2)', _subitems=[], name=None)]), 'types': Section(section='types', items=[SectionItem(value='int', _subitems=[], name='i')]), 'rtypes': Section(section='rtypes', items=[SectionItem(value='int', _subitems=[], name=None)])}
 ```
 
@@ -411,7 +421,9 @@ print(parse_docstring(_function=add_two, dialect="pep257"))
 
 ```shell
 $ python3 add_two.py
-{'returns': Section(section='returns', items=[SectionItem(value='Integer `i` plus two (2)', _subitems=[], name=None)]), 'rtypes': Section(section='rtypes', items=[SectionItem(value='int', _subitems=[], name=None)]), 'arguments': Section(section='arguments', items=[SectionItem(value='the provided integer', _subitems=[], name='i')]), 'types': Section(section='types', items=[SectionItem(value='int', _subitems=[], name='i')])}
+WARNING :: 2021-08-26 18:05:47,347 :: (doc-log) parameter: `i` had different type hints in the docstring and in the signature, signature: `_empty` / docstring: `int`
+WARNING :: 2021-08-26 18:05:47,347 :: (doc-log) return type had different type hints in the docstring and in the signature, signature: `_empty` / docstring: `int`
+{'arguments': Section(section='arguments', items=[SectionItem(value='the provided integer', _subitems=[], name='i')]), 'types': Section(section='types', items=[SectionItem(value='int', _subitems=[], name='i')]), 'returns': Section(section='returns', items=[SectionItem(value='Integer `i` plus two (2)', _subitems=[], name=None)]), 'rtypes': Section(section='rtypes', items=[SectionItem(value='int', _subitems=[], name=None)])}
 ```
 
 ### Parse Type Check Results in `PEP257` Docstring
@@ -453,10 +465,12 @@ print(type_check_rtypes(docstring["rtypes"], results=result))
 
 ```shell
 $ python3 add_two.py
+WARNING :: 2021-08-26 18:06:40,791 :: (doc-log) parameter: `i` had different type hints in the docstring and in the signature, signature: `_empty` / docstring: `int`
+WARNING :: 2021-08-26 18:06:40,792 :: (doc-log) return type had different type hints in the docstring and in the signature, signature: `_empty` / docstring: `tuple[int, int]`
 Arguments ==============
 {'i': SectionItemTypeResult(item=SectionItem(value='int', _subitems=[], name='i'), result=True, expected='int', actual='int', _subitems=[])}
 Return ==============
-[SectionItemTypeResult(item=SectionItem(value='tuple', _subitems=[SectionItem(value='int', _subitems=[], name=None), SectionItem(value='int', _subitems=[], name=None)], name=None), result=True, expected='tuple', actual='tuple', _subitems=[SectionItemTypeResult(item=SectionItem(value='int', _subitems=[], name=None), result=True, expected='int', actual='int', _subitems=[]), SectionItemTypeResult(item=SectionItem(value='int', _subitems=[], name=None), result=True, expected='int', actual='int', _subitems=[])])]
+tuple[int, int] (OK): expected: (tuple), actual: (tuple)
 ```
 
 <a name="setup"></a>

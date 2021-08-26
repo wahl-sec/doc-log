@@ -30,7 +30,7 @@ class SectionItemTypeResult:
         )
 
 
-def _type_check_value(type_hint: str, value: Any) -> bool:
+def _type_check_value(type_hint: str, value: Any, globals_: Dict[str, Any]) -> bool:
     """Type check a given value against a type hint. This check takes into account
     the different capitalizations of types and other special cases.
 
@@ -38,14 +38,24 @@ def _type_check_value(type_hint: str, value: Any) -> bool:
     :type type_hint: str
     :param value: The value to type check.
     :type value: Any
+    :param globals_: Additional custom types related to the local module.
+    :type globals_: Dict[str, Any]
     :return: The result of the type checking.
     :rtype: bool
     """
+    if type_hint == "AnyStr":
+        return isinstance(value, (str, bytes))
+    elif type_hint == "NoReturn":
+        return value is None
+
+    if type_hint in globals_:
+        return globals_[type_hint] == type(value)
+
     return type_hint == type(value).__name__
 
 
 def _type_check_nested_type(
-    item: SectionItem, value: Any
+    item: SectionItem, value: Any, globals_: Dict[str, Any]
 ) -> Tuple[SectionItemTypeResult, bool]:
     """Recursively check the nested type provided from the initial item.
 
@@ -53,12 +63,14 @@ def _type_check_nested_type(
     :type item: SectionItem
     :param value: The value to compare type to.
     :type value: Any
+    :param globals_: Additional custom types related to the local module.
+    :type globals_: Dict[str, Any]
     :return: Tuple containing the result for each nested `SectionItem` and the result of type checking all items.
     :rtype: Tuple[SectionItem, bool]
     """
     item_type_result = SectionItemTypeResult(
         item=item,
-        result=_type_check_value(item.value, value),
+        result=_type_check_value(item.value, value=value, globals_=globals_),
         expected=item.value,
         actual=type(value).__name__,
         _subitems=[],
@@ -72,11 +84,12 @@ def _type_check_nested_type(
 
         _result_flag = False
         for _item in item._subitems:
-            _item_type_check = _type_check_nested_type(item=_item, value=value)
+            _item_type_check = _type_check_nested_type(
+                item=_item, value=value, globals_=globals_
+            )
             _result_flag = _result_flag or _item_type_check.result
             item_type_result._subitems.append(_item_type_check)
         item_type_result.result = _result_flag
-        print(item_type_result.result, _result_flag, item.value)
     else:
         if item._subitems:
             if isinstance(value, dict):
@@ -88,7 +101,7 @@ def _type_check_nested_type(
                 for _key in value.keys():
                     # TODO: Add check to see if item is iterable and of expected length.
                     _item_type_result = _type_check_nested_type(
-                        item=item._subitems[0], value=_key
+                        item=item._subitems[0], value=_key, globals_=globals_
                     )
                     item_type_result._subitems.append(_item_type_result)
                     item_type_result.result = (
@@ -99,7 +112,7 @@ def _type_check_nested_type(
                 for _value in value.values():
                     # TODO: Add check to see if item is iterable and of expected length.
                     _item_type_result = _type_check_nested_type(
-                        item=item._subitems[1], value=_value
+                        item=item._subitems[1], value=_value, globals_=globals_
                     )
                     item_type_result._subitems.append(_item_type_result)
                     item_type_result.result = (
@@ -116,13 +129,11 @@ def _type_check_nested_type(
                     # TODO: Add check to see if item is iterable and of expected length.
                     if len(item._subitems) > 1:
                         _item_type_result = _type_check_nested_type(
-                            item=item._subitems[index],
-                            value=_value,
+                            item=item._subitems[index], value=_value, globals_=globals_
                         )
                     else:
                         _item_type_result = _type_check_nested_type(
-                            item=item._subitems[0],
-                            value=_value,
+                            item=item._subitems[0], value=_value, globals_=globals_
                         )
 
                     item_type_result._subitems.append(_item_type_result)
@@ -140,7 +151,9 @@ def _type_check_nested_type(
                 item_type_result._subitems.append(
                     SectionItemTypeResult(
                         item=item._subitems[0],
-                        result=_type_check_value(item._subitems[0].value, value),
+                        result=_type_check_value(
+                            item._subitems[0].value, value=value, globals_=globals_
+                        ),
                         expected=item._subitems[0].value,
                         actual=type(value).__name__,
                         _subitems=[],
@@ -158,6 +171,7 @@ def type_check_arguments(
     types: Section,
     parameters: Dict[str, Any] = {},
     arguments: Tuple[Any] = (),
+    globals_: Optional[Dict[str, Any]] = globals(),
 ) -> Dict[str, SectionItemTypeResult]:
     """Check argument types for the given section to the actual types of the parameters.
 
@@ -167,6 +181,8 @@ def type_check_arguments(
     :type parameters: Dict[str, Any], optional
     :param arguments: The arguments to be checked.
     :type arguments: Tuple[Any]
+    :param globals_: Additional custom types related to the local module.
+    :type globals_: Optional[Dict[str, Any]]
     :raises KeyError: If the `types` section is not provided as an argument.
     :return: The results for the parameter types.
     :rtype: Dict[str, SectionItemTypeResult]
@@ -217,7 +233,7 @@ def type_check_arguments(
                 )
             )
             _section_item = _type_check_nested_type(
-                section_item, value=parameters[section_item.name]
+                section_item, value=parameters[section_item.name], globals_=globals_
             )
             type_check_results[section_item.name] = _section_item
         else:
@@ -230,7 +246,7 @@ def type_check_arguments(
             type_check_results[section_item.name] = SectionItemTypeResult(
                 item=section_item,
                 result=_type_check_value(
-                    section_item.value, parameters[section_item.name]
+                    section_item.value, parameters[section_item.name], globals_=globals_
                 ),
                 expected=section_item.value,
                 actual=_parameter_type,
@@ -251,13 +267,17 @@ def type_check_arguments(
     return type_check_results
 
 
-def type_check_rtypes(rtypes: Section, results: Any) -> Tuple[SectionItemTypeResult]:
+def type_check_rtypes(
+    rtypes: Section, results: Any, globals_: Optional[Dict[str, Any]] = globals()
+) -> Tuple[SectionItemTypeResult]:
     """Check return types for the given section to the actual types of the output.
 
     :param rtypes: The parsed docstring section for `rtypes`.
     :type rtypes: Section
     :param results: The output values to be checked.
     :type results: List[Any]
+    :param globals_: Additional custom types related to the local module.
+    :type globals_: Optional[Dict[str, Any]]
     :raises KeyError: If the `rtypes` section is not provided as an argument.
     :return: The results for each return type.
     :rtype: Tuple[SectionItemTypeResult]
@@ -276,7 +296,9 @@ def type_check_rtypes(rtypes: Section, results: Any) -> Tuple[SectionItemTypeRes
                     section_item
                 )
             )
-            type_check_results = _type_check_nested_type(section_item, value=results)
+            type_check_results = _type_check_nested_type(
+                section_item, value=results, globals_=globals_
+            )
         else:
             LOGGER.debug(
                 "(doc-log) return type: `{!s}` is not nested, type checking directly against value: `{!r}`".format(
@@ -286,7 +308,9 @@ def type_check_rtypes(rtypes: Section, results: Any) -> Tuple[SectionItemTypeRes
             _parameter_type = type(results).__name__
             type_check_results = SectionItemTypeResult(
                 item=section_item,
-                result=_type_check_value(section_item.value, results),
+                result=_type_check_value(
+                    section_item.value, value=results, globals_=globals_
+                ),
                 expected=section_item.value,
                 actual=_parameter_type,
                 _subitems=[],
