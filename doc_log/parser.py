@@ -2,10 +2,21 @@
 # -*- coding: utf-8 -*-
 
 from re import compile
-from inspect import getmodule, signature, _empty
+from inspect import FrameInfo, getmodule, signature, stack
 from dataclasses import dataclass
-from typing import Callable, Dict, List, Optional, Tuple, Union, Any
+from typing import (
+    Callable,
+    Dict,
+    List,
+    Optional,
+    Tuple,
+    Union,
+    Any,
+    _SpecialForm,
+    TypeVar,
+)
 import logging
+import typing
 
 LOGGER = logging.getLogger()
 
@@ -46,19 +57,19 @@ class SectionItem:
         def _unfold(items: List["SectionItem"], _result: str = "") -> str:
             for item in items:
                 if item._subitems:
-                    _result = (
-                        f"{item.value}[{_unfold(item._subitems, _result=_result)}]"
+                    _result = "{!s}[{!s}]".format(
+                        item.value, _unfold(item._subitems, _result=_result)
                     )
                 else:
                     if not _result:
                         _result = item.value
                     else:
-                        _result = f"{_result}, {item.value}"
+                        _result = "{!s}, {!s}".format(_result, item.value)
 
             return _result
 
         if self._subitems:
-            return f"{self.value}[{_unfold(self._subitems)}]"
+            return "{!s}[{!s}]".format(self.value, _unfold(self._subitems))
 
         return self.value
 
@@ -111,6 +122,44 @@ def parse_docstring(_function: Callable, dialect: str) -> Dict[str, str]:
                     _section_indexes[index] = section
 
         return _section_indexes
+
+    def _sanitize_type_hint(type_hint: str) -> str:
+        """Sanitize a given type hint into a common parseable format.
+        This is mostly to ensure that special types such as `None` whose name is `NoneType`
+        can be handled by the library.
+
+        :param type_hint: The type hint to sanitize.
+        :type type_hint: str
+        :return: The sanitized type hint.
+        :rtype: str
+        """
+
+        def _get_context_frame() -> FrameInfo:
+            for frame in stack():
+                if frame.filename != __file__:
+                    return frame
+
+        _frame = _get_context_frame()
+        if hasattr(typing, type_hint):
+            if not isinstance(getattr(typing, type_hint), (_SpecialForm, TypeVar)):
+                type_hint = getattr(typing, type_hint).__origin__.__name__
+        elif type_hint in globals()["__builtins__"]:
+            type_hint = globals()["__builtins__"][type_hint]
+            if type_hint is None:
+                type_hint = type(type_hint)
+
+            type_hint = type_hint.__name__
+        elif type_hint in _frame.frame.f_globals:
+            type_hint = _frame.frame.f_globals[type_hint].__name__
+        else:
+            if type_hint != "_empty":
+                LOGGER.warning(
+                    "(doc-log) unknown type: `{!r}` provided, treating as literal.".format(
+                        type_hint
+                    )
+                )
+
+        return type_hint
 
     def _collect_sections(
         docstring: List[str],
@@ -202,7 +251,9 @@ def parse_docstring(_function: Callable, dialect: str) -> Dict[str, str]:
                 if len(indexes) > 1
                 else len(docstring),
             ):
-                _docstring.append(f":{_section_indexes[index]} {docstring[_index]}")
+                _docstring.append(
+                    ":{!s} {!s}".format(_section_indexes[index], docstring[_index])
+                )
             indexes = indexes[1:]
 
         return _docstring
@@ -228,13 +279,42 @@ def parse_docstring(_function: Callable, dialect: str) -> Dict[str, str]:
             :rtype: SectionItem
             """
             if hasattr(type_hint, "_name"):
-                _item = SectionItem(
-                    value=type_hint._name.lower(), name=name, _subitems=[]
-                )
-                for argument in type_hint.__args__:
-                    _item._subitems.append(_resolve_nested_type_hint(argument))
+                if type_hint._name is None:
+                    # This is triggered when the type has no base type, i.e special types.
+                    # Since we keep these we need to explicitly convert them in a similar fashion.
+                    _start_index = str(type_hint).find(".")
+                    _end_index = str(type_hint).find("[")
+
+                    _item = SectionItem(
+                        value=_sanitize_type_hint(
+                            str(type_hint)[_start_index + 1 : _end_index]
+                        ),
+                        name=name,
+                        _subitems=[],
+                    )
+                else:
+                    _item = SectionItem(
+                        value=_sanitize_type_hint(type_hint._name),
+                        name=name,
+                        _subitems=[],
+                    )
+
+                if hasattr(type_hint, "__args__"):
+                    for argument in type_hint.__args__:
+                        _item._subitems.append(_resolve_nested_type_hint(argument))
             else:
-                return SectionItem(value=type_hint.__name__, name=name, _subitems=[])
+                if hasattr(type_hint, "__name__"):
+                    return SectionItem(
+                        value=_sanitize_type_hint(type_hint.__name__),
+                        name=name,
+                        _subitems=[],
+                    )
+                else:
+                    return SectionItem(
+                        value=_sanitize_type_hint(type(type_hint).__name__),
+                        name=name,
+                        _subitems=[],
+                    )
 
             return _item
 
@@ -246,8 +326,16 @@ def parse_docstring(_function: Callable, dialect: str) -> Dict[str, str]:
                 _resolve_nested_type_hint(_signature.return_annotation)
             )
         else:
+            _type_hint = _signature.return_annotation
             return_types.items.append(
-                SectionItem(value=_signature.return_annotation.__name__, _subitems=[])
+                SectionItem(
+                    value=_sanitize_type_hint(
+                        _type_hint.__name__
+                        if hasattr(_type_hint, "__name__")
+                        else _type_hint
+                    ),
+                    _subitems=[],
+                )
             )
 
         parameters_types = Section(section="types", items=[])
@@ -259,9 +347,14 @@ def parse_docstring(_function: Callable, dialect: str) -> Dict[str, str]:
                     )
                 )
             else:
+                _type_hint = parameter.annotation
                 parameters_types.items.append(
                     SectionItem(
-                        value=parameter.annotation.__name__,
+                        value=_sanitize_type_hint(
+                            _type_hint.__name__
+                            if hasattr(_type_hint, "__name__")
+                            else _type_hint
+                        ),
                         name=parameter.name,
                         _subitems=[],
                     )
@@ -291,7 +384,7 @@ def parse_docstring(_function: Callable, dialect: str) -> Dict[str, str]:
             _container_type = compile(r"[a-zA-Z0-9\_]*(?=\[)").search(type_hint)
             if _container_type is not None:
                 _section_item = SectionItem(
-                    value=_container_type.group().strip().lower(),
+                    value=_sanitize_type_hint(_container_type.group().strip()),
                     name=name,
                     _subitems=[],
                 )
@@ -324,7 +417,7 @@ def parse_docstring(_function: Callable, dialect: str) -> Dict[str, str]:
                     )
             else:
                 _section_item = SectionItem(
-                    value=type_hint.lower(), name=name, _subitems=[]
+                    value=_sanitize_type_hint(type_hint), name=name, _subitems=[]
                 )
 
             return _section_item
@@ -403,23 +496,23 @@ def parse_docstring(_function: Callable, dialect: str) -> Dict[str, str]:
                 }
 
                 for parameter, section_item in _parameter_type_hints_docstring.items():
-                    if parameter not in _parameter_type_hints:
+                    if str(_parameter_type_hints[parameter]) != str(section_item):
                         LOGGER.warning(
-                            "(doc-log) parameter: `{!s}` was type hinted in docstring but not in signature.".format(
-                                parameter
+                            "(doc-log) parameter: `{!s}` had different type hints in the docstring and in the signature, signature: `{!s}` / docstring: `{!s}`".format(
+                                parameter,
+                                _parameter_type_hints[parameter],
+                                section_item,
                             )
                         )
                         _parameter_type_hints[parameter] = section_item
-                    else:
-                        if str(_parameter_type_hints[parameter]) != str(section_item):
-                            LOGGER.warning(
-                                "(doc-log) parameter: `{!s}` had different type hints in the docstring and in the signature, signature: `{!s}` / docstring: `{!s}`".format(
-                                    parameter,
-                                    _parameter_type_hints[parameter],
-                                    section_item,
-                                )
-                            )
-                            _parameter_type_hints[parameter] = section_item
+            else:
+                for parameter, section_item in _parameter_type_hints.items():
+                    LOGGER.warning(
+                        "(doc-log) parameter: `{!s}` had different type hints in the docstring and in the signature, signature: `{!s}` / docstring: `_empty`".format(
+                            parameter,
+                            _parameter_type_hints[parameter],
+                        )
+                    )
 
             sections["types"] = Section(
                 section="types",
@@ -438,25 +531,21 @@ def parse_docstring(_function: Callable, dialect: str) -> Dict[str, str]:
                 }
 
                 for parameter, section_item in _return_type_hints_docstring.items():
-                    if (
-                        _return_type_hints[parameter].value == _empty.__name__
-                        and section_item.value != _empty.__name__
-                    ):
+                    if str(_return_type_hints[parameter]) != str(section_item):
                         LOGGER.warning(
-                            "(doc-log) return type was type hinted in docstring: `{!s}` but not in signature.".format(
-                                section_item
+                            "(doc-log) return type had different type hints in the docstring and in the signature, signature: `{!s}` / docstring: `{!s}`".format(
+                                _return_type_hints[parameter],
+                                section_item,
                             )
                         )
                         _return_type_hints[parameter] = section_item
-                    else:
-                        if str(_return_type_hints[parameter]) != str(section_item):
-                            LOGGER.warning(
-                                "(doc-log) return type had different type hints in the docstring and in the signature, signature: `{!s}` / docstring: `{!s}`".format(
-                                    _return_type_hints[parameter],
-                                    section_item,
-                                )
-                            )
-                            _return_type_hints[parameter] = section_item
+            else:
+                for parameter, section_item in _return_type_hints.items():
+                    LOGGER.warning(
+                        "(doc-log) return type had different type hints in the docstring and in the signature, signature: `{!s}` / docstring: `_empty`".format(
+                            _return_type_hints[parameter],
+                        )
+                    )
 
             sections["rtypes"] = Section(
                 section="rtypes",
@@ -715,5 +804,7 @@ def parse_docstring(_function: Callable, dialect: str) -> Dict[str, str]:
         return _parse_numpydoc_multiline(_function)
     else:
         raise ValueError(
-            f"dialect type: {dialect}, expected one of `pep257`, `epytext`, `rest`, `google` or `numpydoc`"
+            "dialect type: {!s}, expected one of `pep257`, `epytext`, `rest`, `google` or `numpydoc`".format(
+                dialect
+            )
         )

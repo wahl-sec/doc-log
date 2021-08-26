@@ -55,7 +55,7 @@ def test_type_check_pep257_style_nested_invalid_mixed_passive():
     assert list(
         (item.result, item.expected, item.actual)
         for item in type_check_returns._subitems
-    ) == [(True, "tuple", "tuple"), (False, "str", "int")]
+    ) == [(False, "tuple", "tuple"), (False, "str", "int")]
     assert list(
         (item.result, item.expected, item.actual)
         for item in type_check_returns._subitems[0]._subitems
@@ -102,7 +102,7 @@ def test_type_check_epytext_style_nested_invalid_mixed_passive():
     assert list(
         (item.result, item.expected, item.actual)
         for item in type_check_returns._subitems
-    ) == [(True, "tuple", "tuple"), (False, "str", "int")]
+    ) == [(False, "tuple", "tuple"), (False, "str", "int")]
     assert list(
         (item.result, item.expected, item.actual)
         for item in type_check_returns._subitems[0]._subitems
@@ -148,7 +148,7 @@ def test_type_check_rest_style_nested_invalid_mixed_passive():
     assert list(
         (item.result, item.expected, item.actual)
         for item in type_check_returns._subitems
-    ) == [(True, "tuple", "tuple"), (False, "str", "int")]
+    ) == [(False, "tuple", "tuple"), (False, "str", "int")]
     assert list(
         (item.result, item.expected, item.actual)
         for item in type_check_returns._subitems[0]._subitems
@@ -201,7 +201,7 @@ def test_type_check_google_style_nested_invalid_mixed_passive():
     assert list(
         (item.result, item.expected, item.actual)
         for item in type_check_returns._subitems
-    ) == [(True, "tuple", "tuple"), (False, "str", "int")]
+    ) == [(False, "tuple", "tuple"), (False, "str", "int")]
     assert list(
         (item.result, item.expected, item.actual)
         for item in type_check_returns._subitems[0]._subitems
@@ -265,7 +265,7 @@ def test_type_check_numpydoc_style_nested_invalid_mixed_passive():
         assert list(
             (item.result, item.expected, item.actual)
             for item in type_check_returns._subitems
-        ) == [(True, "tuple", "tuple"), (False, "str", "int")]
+        ) == [(False, "tuple", "tuple"), (False, "str", "int")]
         assert list(
             (item.result, item.expected, item.actual)
             for item in type_check_returns._subitems[0]._subitems

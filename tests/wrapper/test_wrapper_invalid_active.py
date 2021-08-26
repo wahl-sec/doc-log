@@ -6,7 +6,7 @@ import pytest
 from doc_log import doc_log
 
 
-def test_wrapper_pep257_style_simple_active():
+def test_wrapper_pep257_style_invalid_active():
     @doc_log(dialect="pep257", type_check=True, _active_type_check=True)
     def _test_func(i, j=0) -> int:
         """Function that adds two numbers and returns the result.
@@ -27,13 +27,16 @@ def test_wrapper_pep257_style_simple_active():
         Return Type:
         int
         """
-        return i + j
+        return str(i + j)
 
     with pytest.raises(TypeError):
         assert _test_func("2") == 2
 
+    with pytest.raises(TypeError):
+        assert _test_func(2) == 2
 
-def test_wrapper_epytext_style_simple_passive():
+
+def test_wrapper_epytext_style_invalid_active():
     @doc_log(dialect="epytext", type_check=True, _active_type_check=True)
     def _test_func(i, j=0) -> int:
         """
@@ -46,13 +49,16 @@ def test_wrapper_epytext_style_simple_passive():
         @return: Result of addition between `i` and `j`.
         @rtype: int
         """
-        return i + j
+        return str(i + j)
 
     with pytest.raises(TypeError):
         assert _test_func("2") == 2
 
+    with pytest.raises(TypeError):
+        assert _test_func(2) == 2
 
-def test_wrapper_rest_style_simple_passive():
+
+def test_wrapper_rest_style_invalid_active():
     @doc_log(dialect="rest", type_check=True, _active_type_check=True)
     def _test_func(i, j=0) -> int:
         """Function that adds two numbers and returns the result.
@@ -64,13 +70,16 @@ def test_wrapper_rest_style_simple_passive():
         :return: Result of addition between `i` and `j`.
         :rtype: int
         """
-        return i + j
+        return str(i + j)
 
     with pytest.raises(TypeError):
         assert _test_func("2") == 2
 
+    with pytest.raises(TypeError):
+        assert _test_func(2) == 2
 
-def test_wrapper_google_style_simple_passive():
+
+def test_wrapper_google_style_invalid_active():
     @doc_log(dialect="google", type_check=True, _active_type_check=True)
     def _test_func(i, j=0) -> int:
         """Function that adds two numbers and returns the result.
@@ -89,13 +98,16 @@ def test_wrapper_google_style_simple_passive():
         Return Type:
             int
         """
-        return i + j
+        return str(i + j)
 
     with pytest.raises(TypeError):
         assert _test_func("2") == 2
 
+    with pytest.raises(TypeError):
+        assert _test_func(2) == 2
 
-def test_wrapper_numpydoc_style_simple_passive():
+
+def test_wrapper_numpydoc_style_invalid_active():
     @doc_log(dialect="numpydoc", type_check=True, _active_type_check=True)
     def _test_func(i, j=0) -> int:
         """Function that adds two numbers and returns the result.
@@ -112,7 +124,11 @@ def test_wrapper_numpydoc_style_simple_passive():
         int
             Result of addition between `i` and `j`.
         """
-        return i + j
+        return str(i + j)
 
     with pytest.raises(NotImplementedError):
-        assert _test_func(2) == 2
+        with pytest.raises(TypeError):
+            assert _test_func("2") == 2
+
+        with pytest.raises(TypeError):
+            assert _test_func(2) == 2

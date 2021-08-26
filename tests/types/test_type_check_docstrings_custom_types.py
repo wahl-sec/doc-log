@@ -7,38 +7,46 @@ from doc_log.parser import parse_docstring
 from doc_log.types import type_check_arguments, type_check_rtypes
 
 
-def test_type_check_pep257_style_invalid_passive():
-    def _test_func(i, j=0) -> int:
-        """Function that adds two numbers and returns the result.
+class Adder:
+    def __init__(self, value):
+        self.value = value
+
+    def __add__(self, other):
+        return self.value + other.value + 1
+
+
+def test_type_check_pep257_style_custom_types_passive():
+    def _test_func(i, j=0) -> Adder:
+        """Function that adds two `Adders` and returns a new `Adder` with the result.
 
         Arguments:
-        i -- the first number
+        i -- the first `Adder`
 
         Keyword Arguments:
-        j -- the second number (default 0)
+        j -- the second `Adder` (default 0)
 
         Types:
-        i -- str
-        j -- str
+        i -- Adder
+        j -- Adder
 
         Returns:
         Result of addition between `i` and `j`.
 
         Return Type:
-        int
+        Adder
         """
-        return i + j
+        return Adder(i + j)
 
-    i, j = 2, 2
+    i, j = Adder(2), Adder(2)
     parsed_docstring = parse_docstring(_test_func, dialect="pep257")
     type_check_results = type_check_arguments(
         parsed_docstring["types"],
         parameters={"i": i, "j": j},
     )
-    assert not type_check_results["i"].result
-    assert type_check_results["i"].expected != type_check_results["i"].actual
-    assert not type_check_results["j"].result
-    assert type_check_results["j"].expected != type_check_results["j"].actual
+    assert type_check_results["i"].result
+    assert type_check_results["i"].expected == type_check_results["i"].actual
+    assert type_check_results["j"].result
+    assert type_check_results["j"].expected == type_check_results["j"].actual
 
     result = _test_func(i, j)
     type_check_returns = type_check_rtypes(parsed_docstring["rtypes"], results=result)
@@ -50,33 +58,32 @@ def test_type_check_pep257_style_invalid_passive():
         == type_check_returns.actual
     )
 
-    assert result == 4
+    assert result.value == 5
 
 
-def test_type_check_epytext_style_invalid_passive():
-    def _test_func(i, j) -> int:
-        """
-        Function that adds two numbers and returns the result.
+def test_type_check_epytext_style_custom_types_passive():
+    def _test_func(i, j):
+        """Function that adds two `Adders` and returns a new `Adder` with the result.
 
-        @param i: the first number
-        @type i: str
-        @param j: the second number
-        @type j: str
+        @param i: the first `Adder`
+        @type i: Adder
+        @param j: the second `Adder`
+        @type j: Adder
         @return: Result of addition between `i` and `j`.
-        @rtype: int
+        @rtype: Adder
         """
-        return i + j
+        return Adder(i + j)
 
-    i, j = 2, 2
+    i, j = Adder(2), Adder(2)
     parsed_docstring = parse_docstring(_test_func, dialect="epytext")
     type_check_results = type_check_arguments(
         parsed_docstring["types"],
         parameters={"i": i, "j": j},
     )
-    assert not type_check_results["i"].result
-    assert type_check_results["i"].expected != type_check_results["i"].actual
-    assert not type_check_results["j"].result
-    assert type_check_results["j"].expected != type_check_results["j"].actual
+    assert type_check_results["i"].result
+    assert type_check_results["i"].expected == type_check_results["i"].actual
+    assert type_check_results["j"].result
+    assert type_check_results["j"].expected == type_check_results["j"].actual
 
     result = _test_func(i, j)
     type_check_returns = type_check_rtypes(parsed_docstring["rtypes"], results=result)
@@ -88,32 +95,32 @@ def test_type_check_epytext_style_invalid_passive():
         == type_check_returns.actual
     )
 
-    assert result == 4
+    assert result.value == 5
 
 
-def test_type_check_rest_style_invalid_passive():
+def test_type_check_rest_style_custom_types_passive():
     def _test_func(i, j) -> int:
-        """Function that adds two numbers and returns the result.
+        """Function that adds two `Adders` and returns a new `Adder` with the result.
 
-        :param i: the first number
-        :type i: str
-        :param j: the second number
-        :type j: str
+        :param i: the first `Adder`
+        :type i: Adder
+        :param j: the second `Adder`
+        :type j: Adder
         :return: Result of addition between `i` and `j`.
-        :rtype: int
+        :rtype: Adder
         """
-        return i + j
+        return Adder(i + j)
 
-    i, j = 2, 2
+    i, j = Adder(2), Adder(2)
     parsed_docstring = parse_docstring(_test_func, dialect="rest")
     type_check_results = type_check_arguments(
         parsed_docstring["types"],
         parameters={"i": i, "j": j},
     )
-    assert not type_check_results["i"].result
-    assert type_check_results["i"].expected != type_check_results["i"].actual
-    assert not type_check_results["j"].result
-    assert type_check_results["j"].expected != type_check_results["j"].actual
+    assert type_check_results["i"].result
+    assert type_check_results["i"].expected == type_check_results["i"].actual
+    assert type_check_results["j"].result
+    assert type_check_results["j"].expected == type_check_results["j"].actual
 
     result = _test_func(i, j)
     type_check_returns = type_check_rtypes(parsed_docstring["rtypes"], results=result)
@@ -125,39 +132,39 @@ def test_type_check_rest_style_invalid_passive():
         == type_check_returns.actual
     )
 
-    assert result == 4
+    assert result.value == 5
 
 
-def test_type_check_google_style_invalid_passive():
+def test_type_check_google_style_custom_types_passive():
     def _test_func(i, j) -> int:
-        """Function that adds two numbers and returns the result.
+        """Function that adds two `Adders` and returns a new `Adder` with the result.
 
         Args:
-            i: the first number
-            j: the second number
+            i: the first `Adder`
+            j: the second `Adder`
 
         Types:
-            i: str
-            j: str
+            i: Adder
+            j: Adder
 
         Returns:
             Result of addition between `i` and `j`.
 
         Return Type:
-            int
+            Adder
         """
-        return i + j
+        return Adder(i + j)
 
-    i, j = 2, 2
+    i, j = Adder(2), Adder(2)
     parsed_docstring = parse_docstring(_test_func, dialect="google")
     type_check_results = type_check_arguments(
         parsed_docstring["types"],
         parameters={"i": i, "j": j},
     )
-    assert not type_check_results["i"].result
-    assert type_check_results["i"].expected != type_check_results["i"].actual
-    assert not type_check_results["j"].result
-    assert type_check_results["j"].expected != type_check_results["j"].actual
+    assert type_check_results["i"].result
+    assert type_check_results["i"].expected == type_check_results["i"].actual
+    assert type_check_results["j"].result
+    assert type_check_results["j"].expected == type_check_results["j"].actual
 
     result = _test_func(i, j)
     type_check_returns = type_check_rtypes(parsed_docstring["rtypes"], results=result)
@@ -169,38 +176,38 @@ def test_type_check_google_style_invalid_passive():
         == type_check_returns.actual
     )
 
-    assert result == 4
+    assert result.value == 5
 
 
-def test_type_check_numpydoc_style_invalid_passive():
+def test_type_check_numpydoc_style_custom_types_passive():
     def _test_func(i, j) -> int:
-        """Function that adds two numbers and returns the result.
+        """Function that adds two `Adders` and returns a new `Adder` with the result.
 
         Parameters
         ----------
-        i : str
-            the first number
-        j : str
-            the second number
+        i : Adder
+            the first `Adder`
+        j : Adder
+            the second `Adder`
 
         Returns
         -------
-        int
+        Adder
             Result of addition between `i` and `j`.
         """
-        return i + j
+        return Adder(i + j)
 
     with pytest.raises(NotImplementedError):
-        i, j = 2, 2
+        i, j = Adder(2), Adder(2)
         parsed_docstring = parse_docstring(_test_func, dialect="numpydoc")
         type_check_results = type_check_arguments(
             parsed_docstring["types"],
             parameters={"i": i, "j": j},
         )
-        assert not type_check_results["i"].result
-        assert type_check_results["i"].expected != type_check_results["i"].actual
-        assert not type_check_results["j"].result
-        assert type_check_results["j"].expected != type_check_results["j"].actual
+        assert type_check_results["i"].result
+        assert type_check_results["i"].expected == type_check_results["i"].actual
+        assert type_check_results["j"].result
+        assert type_check_results["j"].expected == type_check_results["j"].actual
 
         result = _test_func(i, j)
         type_check_returns = type_check_rtypes(
@@ -214,4 +221,4 @@ def test_type_check_numpydoc_style_invalid_passive():
             == type_check_returns.actual
         )
 
-        assert result == 4
+        assert result.value == 5
