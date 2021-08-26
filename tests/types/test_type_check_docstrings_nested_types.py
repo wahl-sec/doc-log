@@ -50,7 +50,7 @@ def test_type_check_pep257_style_nested_passive():
     assert result == ((4, 5), 2)
 
 
-def test_type_check_epytext_style_simple_passive():
+def test_type_check_epytext_style_nested_passive():
     def _test_func(i: Dict[str, int], j: List[int] = 0) -> Tuple[Tuple[int, int], int]:
         """
         Function that adds two numbers and returns the result.
@@ -76,7 +76,7 @@ def test_type_check_epytext_style_simple_passive():
     assert result == ((4, 5), 2)
 
 
-def test_type_check_rest_style_simple_passive():
+def test_type_check_rest_style_nested_passive():
     def _test_func(i: Dict[str, int], j: List[int] = 0) -> Tuple[Tuple[int, int], int]:
         """Function that adds two numbers and returns the result.
 
@@ -101,7 +101,7 @@ def test_type_check_rest_style_simple_passive():
     assert result == ((4, 5), 2)
 
 
-def test_type_check_google_style_simple_passive():
+def test_type_check_google_style_nested_passive():
     def _test_func(i: Dict[str, int], j: List[int] = 0) -> Tuple[Tuple[int, int], int]:
         """Function that adds two numbers and returns the result.
 
@@ -129,7 +129,7 @@ def test_type_check_google_style_simple_passive():
     assert result == ((4, 5), 2)
 
 
-def test_type_check_numpydoc_style_simple_passive():
+def test_type_check_numpydoc_style_nested_passive():
     def _test_func(i: Dict[str, int], j: List[int] = 0) -> Tuple[Tuple[int, int], int]:
         """Function that adds two numbers and returns the result.
 

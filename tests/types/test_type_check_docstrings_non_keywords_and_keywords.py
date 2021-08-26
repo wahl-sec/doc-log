@@ -7,7 +7,7 @@ from doc_log.parser import parse_docstring
 from doc_log.types import type_check_arguments, type_check_rtypes
 
 
-def test_type_check_pep257_style_simple_passive():
+def test_type_check_pep257_style_keywords_mixed_passive():
     def _test_func(i, j=0) -> int:
         """Function that adds two numbers and returns the result.
 
@@ -54,7 +54,7 @@ def test_type_check_pep257_style_simple_passive():
     assert result == 4
 
 
-def test_type_check_epytext_style_simple_passive():
+def test_type_check_epytext_style_keywords_mixed_passive():
     def _test_func(i, j) -> int:
         """
         Function that adds two numbers and returns the result.
@@ -93,7 +93,7 @@ def test_type_check_epytext_style_simple_passive():
     assert result == 4
 
 
-def test_type_check_rest_style_simple_passive():
+def test_type_check_rest_style_keywords_mixed_passive():
     def _test_func(i, j) -> int:
         """Function that adds two numbers and returns the result.
 
@@ -131,7 +131,7 @@ def test_type_check_rest_style_simple_passive():
     assert result == 4
 
 
-def test_type_check_google_style_simple_passive():
+def test_type_check_google_style_keywords_mixed_passive():
     def _test_func(i, j) -> int:
         """Function that adds two numbers and returns the result.
 
@@ -176,7 +176,7 @@ def test_type_check_google_style_simple_passive():
     assert result == 4
 
 
-def test_type_check_numpydoc_style_simple_passive():
+def test_type_check_numpydoc_style_keywords_mixed_passive():
     def _test_func(i, j) -> int:
         """Function that adds two numbers and returns the result.
 

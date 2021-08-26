@@ -45,7 +45,7 @@ def doc_log(
                             if not section_item_result.result:
                                 if LOGGER.level >= logging.ERROR or _active_type_check:
                                     raise TypeError(
-                                        "`(doc-log) parameter: {!s}` was not of expected type: `{!s}` was actually `{!s}`".format(
+                                        "(doc-log) parameter: `{!s}` was not of expected type: `{!s}` was actually `{!s}`".format(
                                             parameter,
                                             section_item_result.expected,
                                             section_item_result.actual,

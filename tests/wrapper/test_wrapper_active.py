@@ -32,7 +32,7 @@ def test_wrapper_pep257_style_simple_active():
     assert _test_func(2) == 2
 
 
-def test_wrapper_epytext_style_simple_passive():
+def test_wrapper_epytext_style_simple_active():
     @doc_log(dialect="epytext", type_check=True, _active_type_check=True)
     def _test_func(i, j=0) -> int:
         """
@@ -50,7 +50,7 @@ def test_wrapper_epytext_style_simple_passive():
     assert _test_func(2) == 2
 
 
-def test_wrapper_rest_style_simple_passive():
+def test_wrapper_rest_style_simple_active():
     @doc_log(dialect="rest", type_check=True, _active_type_check=True)
     def _test_func(i, j=0) -> int:
         """Function that adds two numbers and returns the result.
@@ -67,7 +67,7 @@ def test_wrapper_rest_style_simple_passive():
     assert _test_func(2) == 2
 
 
-def test_wrapper_google_style_simple_passive():
+def test_wrapper_google_style_simple_active():
     @doc_log(dialect="google", type_check=True, _active_type_check=True)
     def _test_func(i, j=0) -> int:
         """Function that adds two numbers and returns the result.
@@ -91,7 +91,7 @@ def test_wrapper_google_style_simple_passive():
     assert _test_func(2) == 2
 
 
-def test_wrapper_numpydoc_style_simple_passive():
+def test_wrapper_numpydoc_style_simple_active():
     @doc_log(dialect="numpydoc", type_check=True, _active_type_check=True)
     def _test_func(i, j=0) -> int:
         """Function that adds two numbers and returns the result.

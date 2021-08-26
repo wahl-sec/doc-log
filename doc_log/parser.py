@@ -46,19 +46,19 @@ class SectionItem:
         def _unfold(items: List["SectionItem"], _result: str = "") -> str:
             for item in items:
                 if item._subitems:
-                    _result = (
-                        f"{item.value}[{_unfold(item._subitems, _result=_result)}]"
+                    _result = "{!s}[{!s}]".format(
+                        item.value, _unfold(item._subitems, _result=_result)
                     )
                 else:
                     if not _result:
                         _result = item.value
                     else:
-                        _result = f"{_result}, {item.value}"
+                        _result = "{!s}, {!s}".format(_result, item.value)
 
             return _result
 
         if self._subitems:
-            return f"{self.value}[{_unfold(self._subitems)}]"
+            return "{!s}[{!s}]".format(self.value, _unfold(self._subitems))
 
         return self.value
 
@@ -112,6 +112,23 @@ def parse_docstring(_function: Callable, dialect: str) -> Dict[str, str]:
 
         return _section_indexes
 
+    def _sanitize_type_hint(type_hint: str) -> str:
+        """Sanitize a given type hint into a common parseable format.
+        This is mostly to ensure that special types such as `None` whose name is `NoneType`
+        can be handled by the library.
+
+        :param type_hint: The type hint to sanitize.
+        :type type_hint: str
+        :return: The sanitized type hint.
+        :rtype: str
+        """
+        if type_hint in ["List", "Dict", "Tuple"]:
+            type_hint = type_hint.lower()
+        elif type_hint == "None":
+            type_hint = "NoneType"
+
+        return type_hint
+
     def _collect_sections(
         docstring: List[str],
         section_indexes: Dict[int, str],
@@ -150,7 +167,7 @@ def parse_docstring(_function: Callable, dialect: str) -> Dict[str, str]:
                 value = value.group().strip() if value is not None else None
 
             _collected_sections[section_indexes[index]].items.append(
-                SectionItem(value=value, name=name, _subitems=[])
+                SectionItem(value=_sanitize_type_hint(value), name=name, _subitems=[])
             )
 
         LOGGER.debug(
@@ -202,7 +219,9 @@ def parse_docstring(_function: Callable, dialect: str) -> Dict[str, str]:
                 if len(indexes) > 1
                 else len(docstring),
             ):
-                _docstring.append(f":{_section_indexes[index]} {docstring[_index]}")
+                _docstring.append(
+                    ":{!s} {!s}".format(_section_indexes[index], docstring[_index])
+                )
             indexes = indexes[1:]
 
         return _docstring
@@ -229,12 +248,16 @@ def parse_docstring(_function: Callable, dialect: str) -> Dict[str, str]:
             """
             if hasattr(type_hint, "_name"):
                 _item = SectionItem(
-                    value=type_hint._name.lower(), name=name, _subitems=[]
+                    value=_sanitize_type_hint(type_hint._name), name=name, _subitems=[]
                 )
                 for argument in type_hint.__args__:
                     _item._subitems.append(_resolve_nested_type_hint(argument))
             else:
-                return SectionItem(value=type_hint.__name__, name=name, _subitems=[])
+                return SectionItem(
+                    value=_sanitize_type_hint(type_hint.__name__),
+                    name=name,
+                    _subitems=[],
+                )
 
             return _item
 
@@ -247,7 +270,10 @@ def parse_docstring(_function: Callable, dialect: str) -> Dict[str, str]:
             )
         else:
             return_types.items.append(
-                SectionItem(value=_signature.return_annotation.__name__, _subitems=[])
+                SectionItem(
+                    value=_sanitize_type_hint(_signature.return_annotation.__name__),
+                    _subitems=[],
+                )
             )
 
         parameters_types = Section(section="types", items=[])
@@ -261,7 +287,7 @@ def parse_docstring(_function: Callable, dialect: str) -> Dict[str, str]:
             else:
                 parameters_types.items.append(
                     SectionItem(
-                        value=parameter.annotation.__name__,
+                        value=_sanitize_type_hint(parameter.annotation.__name__),
                         name=parameter.name,
                         _subitems=[],
                     )
@@ -291,7 +317,7 @@ def parse_docstring(_function: Callable, dialect: str) -> Dict[str, str]:
             _container_type = compile(r"[a-zA-Z0-9\_]*(?=\[)").search(type_hint)
             if _container_type is not None:
                 _section_item = SectionItem(
-                    value=_container_type.group().strip().lower(),
+                    value=_sanitize_type_hint(_container_type.group().strip()),
                     name=name,
                     _subitems=[],
                 )
@@ -324,7 +350,7 @@ def parse_docstring(_function: Callable, dialect: str) -> Dict[str, str]:
                     )
             else:
                 _section_item = SectionItem(
-                    value=type_hint.lower(), name=name, _subitems=[]
+                    value=_sanitize_type_hint(type_hint), name=name, _subitems=[]
                 )
 
             return _section_item
@@ -715,5 +741,7 @@ def parse_docstring(_function: Callable, dialect: str) -> Dict[str, str]:
         return _parse_numpydoc_multiline(_function)
     else:
         raise ValueError(
-            f"dialect type: {dialect}, expected one of `pep257`, `epytext`, `rest`, `google` or `numpydoc`"
+            "dialect type: {!s}, expected one of `pep257`, `epytext`, `rest`, `google` or `numpydoc`".format(
+                dialect
+            )
         )

@@ -139,7 +139,7 @@ def test_type_check_google_style_mixed_passive():
         Returns:
             Result of addition between `i` and `j`.
 
-        Return Types:
+        Return Type:
             int
         """
         return i + j
