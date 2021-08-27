@@ -3,12 +3,12 @@
 
 from dataclasses import dataclass
 from collections.abc import Iterable
-from typing import Dict, Any, List, Tuple, Optional
+from typing import Callable, Dict, Any, List, Tuple, Optional
 import logging
 
 LOGGER = logging.getLogger()
 
-from doc_log.parser import Section, SectionItem
+from doc_log.parser import Section, SectionItem, _get_context_frame
 
 
 @dataclass
@@ -177,6 +177,8 @@ def type_check_arguments(
 
     :param types: The parsed docstring section for `types`.
     :type types: Section
+    :param _function: The function signature, used in order to provide correct logging.
+    :type _function: Callable
     :param parameters: The keyword arguments to be checked.
     :type parameters: Dict[str, Any], optional
     :param arguments: The arguments to be checked.
@@ -187,8 +189,15 @@ def type_check_arguments(
     :return: The results for the parameter types.
     :rtype: Dict[str, SectionItemTypeResult]
     """
+    _frame = _get_context_frame().frame
     if types.section != "types":
-        raise KeyError("(doc-log) provided section needs to be of type: `types`")
+        raise KeyError(
+            "(doc-log :: {!s}:{!s}:{!s}) provided section needs to be of type: `types`".format(
+                _frame.f_code.co_name,
+                types._function.co_firstlineno + 1,
+                _frame.f_lineno,
+            )
+        )
 
     if arguments:
         for index, section_item in enumerate(
@@ -202,8 +211,12 @@ def type_check_arguments(
                 break
 
             LOGGER.warning(
-                "(doc-log) argument was passed as non-keyword guessing: `{!s} := {!r}`".format(
-                    section_item.name, arguments[index]
+                "(doc-log :: {!s}:{!s}:{!s}) argument was passed as non-keyword guessing: `{!s} := {!r}`".format(
+                    _frame.f_code.co_name,
+                    types._function.co_firstlineno + 1 + section_item.lineno,
+                    _frame.f_lineno,
+                    section_item.name,
+                    arguments[index],
                 )
             )
             parameters[section_item.name] = arguments[index]
@@ -219,8 +232,11 @@ def type_check_arguments(
         if section_item.name not in parameters:
             # TODO: Don't warn if the parameter is optional.
             LOGGER.warning(
-                "(doc-log) parameter: `{!s}` was type hinted, but not provided as a parameter.".format(
-                    section_item.name
+                "(doc-log :: {!s}:{!s}:{!s}) parameter: `{!s}` was type hinted, but not provided as a parameter.".format(
+                    _frame.f_code.co_name,
+                    types._function.co_firstlineno + 1 + section_item.lineno,
+                    _frame.f_lineno,
+                    section_item.name,
                 )
             )
             continue
@@ -228,8 +244,11 @@ def type_check_arguments(
         _consumed.add(section_item.name)
         if section_item._subitems:
             LOGGER.debug(
-                "(doc-log) item: `{!s}` is nested, type checking subitems".format(
-                    section_item
+                "(doc-log :: {!s}:{!s}:{!s}) item: `{!s}` is nested, type checking subitems".format(
+                    _frame.f_code.co_name,
+                    types._function.co_firstlineno + 1 + section_item.lineno,
+                    _frame.f_lineno,
+                    section_item,
                 )
             )
             _section_item = _type_check_nested_type(
@@ -238,8 +257,12 @@ def type_check_arguments(
             type_check_results[section_item.name] = _section_item
         else:
             LOGGER.debug(
-                "(doc-log) item: `{!s}` is not nested, type checking directly against value: `{!r}`".format(
-                    section_item, parameters[section_item.name]
+                "(doc-log :: {!s}:{!s}:{!s}) item: `{!s}` is not nested, type checking directly against value: `{!r}`".format(
+                    _frame.f_code.co_name,
+                    types._function.co_firstlineno + 1 + section_item.lineno,
+                    _frame.f_lineno,
+                    section_item,
+                    parameters[section_item.name],
                 )
             )
             _parameter_type = type(parameters[section_item.name]).__name__
@@ -255,14 +278,23 @@ def type_check_arguments(
 
     if len(_consumed) != len(parameters):
         LOGGER.warning(
-            "(doc-log) parameters that were not type hinted was passed, consumed: `{!s}`, passed: `{!s}`".format(
-                ", ".join(_consumed), ", ".join(parameters)
+            "(doc-log :: {!s}:{!s}:{!s}) parameters that were not type hinted was passed, consumed: `{!s}`, passed: `{!s}`".format(
+                _frame.f_code.co_name,
+                types._function.co_firstlineno + 1 + types.lineno,
+                _frame.f_lineno,
+                ", ".join(_consumed),
+                ", ".join(parameters),
             )
         )
 
     # TODO: Log this in a better format.
     LOGGER.debug(
-        "(doc-log) type check arguments results was: `{!r}`".format(type_check_results)
+        "(doc-log :: {!s}:{!s}:{!s}) type check arguments results was: `{!r}`".format(
+            _frame.f_code.co_name,
+            types._function.co_firstlineno + 1 + types.lineno,
+            _frame.f_lineno,
+            type_check_results,
+        )
     )
     return type_check_results
 
@@ -282,6 +314,7 @@ def type_check_rtypes(
     :return: The results for each return type.
     :rtype: Tuple[SectionItemTypeResult]
     """
+    _frame = _get_context_frame().frame
     if rtypes.section != "rtypes":
         raise KeyError("Provided section needs to be of type: `rtypes`")
 
@@ -292,8 +325,11 @@ def type_check_rtypes(
     for section_item in rtypes.items:
         if section_item._subitems:
             LOGGER.debug(
-                "(doc-log) return type: `{!s}` is nested, type checking subitems".format(
-                    section_item
+                "(doc-log :: {!s}:{!s}:{!s}) return type: `{!s}` is nested, type checking subitems".format(
+                    _frame.f_code.co_name,
+                    rtypes._function.co_firstlineno + 1 + section_item.lineno,
+                    _frame.f_lineno,
+                    section_item,
                 )
             )
             type_check_results = _type_check_nested_type(
@@ -301,8 +337,12 @@ def type_check_rtypes(
             )
         else:
             LOGGER.debug(
-                "(doc-log) return type: `{!s}` is not nested, type checking directly against value: `{!r}`".format(
-                    section_item, results
+                "(doc-log :: {!s}:{!s}:{!s}) return type: `{!s}` is not nested, type checking directly against value: `{!r}`".format(
+                    _frame.f_code.co_name,
+                    rtypes._function.co_firstlineno + 1 + section_item.lineno,
+                    _frame.f_lineno,
+                    section_item,
+                    results,
                 )
             )
             _parameter_type = type(results).__name__
@@ -318,6 +358,11 @@ def type_check_rtypes(
 
     # TODO: Log this in a better format.
     LOGGER.debug(
-        "(doc-log) type check return results was: `{!r}`".format(type_check_results)
+        "(doc-log :: {!s}:{!s}:{!s}) type check return results was: `{!r}`".format(
+            _frame.f_code.co_name,
+            rtypes._function.co_firstlineno + 1 + rtypes.lineno,
+            _frame.f_lineno,
+            type_check_results,
+        )
     )
     return type_check_results

@@ -2,12 +2,12 @@
 
 
 from datetime import datetime
-from inspect import getmodule
+from inspect import FrameInfo, getmodule, stack
 from functools import wraps
 from typing import Optional
 import logging
 
-from doc_log.parser import parse_docstring
+from doc_log.parser import parse_docstring, _get_context_frame
 from doc_log.types import type_check_arguments, type_check_rtypes
 
 logging.basicConfig(
@@ -30,6 +30,7 @@ def doc_log(
                 rules = parse_docstring(_function=func, dialect=dialect)
                 # TODO: Add validation checks for the rules to ensure expected format.
 
+                _frame = _get_context_frame().frame
                 if type_check:
                     if "types" in rules:
                         _type_check_arguments_results = type_check_arguments(
@@ -45,7 +46,12 @@ def doc_log(
                             if not section_item_result.result:
                                 if LOGGER.level >= logging.ERROR or _active_type_check:
                                     raise TypeError(
-                                        "(doc-log) parameter: `{!s}` was not of expected type: `{!s}` was actually `{!s}`".format(
+                                        "(doc-log :: {!s}:{!s}:{!s}) parameter: `{!s}` was not of expected type: `{!s}` was actually `{!s}`".format(
+                                            _frame.f_code.co_name,
+                                            func.__code__.co_firstlineno
+                                            + 1
+                                            + section_item_result.item.lineno,
+                                            _frame.f_lineno,
                                             parameter,
                                             section_item_result.expected,
                                             section_item_result.actual,
@@ -53,7 +59,12 @@ def doc_log(
                                     )
                                 else:
                                     LOGGER.warning(
-                                        "(doc-log) parameter: `{!s}` was not of expected type: `{!s}` was actually `{!s}`".format(
+                                        "(doc-log :: {!s}:{!s}:{!s}) parameter: `{!s}` was not of expected type: `{!s}` was actually `{!s}`".format(
+                                            _frame.f_code.co_name,
+                                            func.__code__.co_firstlineno
+                                            + 1
+                                            + section_item_result.item.lineno,
+                                            _frame.f_lineno,
                                             parameter,
                                             section_item_result.expected,
                                             section_item_result.actual,
@@ -61,23 +72,36 @@ def doc_log(
                                     )
                     else:
                         LOGGER.warning(
-                            "(doc-log) `type_check` was defined, however, no `types` section could be parsed."
+                            "(doc-log :: {!s}:{!s}:{!s}) `type_check` was defined, however, no `types` section could be parsed.".format(
+                                _frame.f_code.co_name,
+                                func.__code__.co_firstlineno + 1,
+                                _frame.f_lineno,
+                            )
                         )
 
                     LOGGER.info(
-                        "(doc-log) function: `{!s}` called from `{!s}` at: `{!s}`".format(
+                        "(doc-log :: {!s}:{!s}:{!s}) function: `{!s}` called from `{!s}` at: `{!s}`".format(
+                            _frame.f_code.co_name,
+                            func.__code__.co_firstlineno + 1,
+                            _frame.f_lineno,
                             func.__name__,
                             getmodule(func).__file__,
                             datetime.now().isoformat(),
                         )
                     )
                     LOGGER.debug(
-                        "(doc-log) function: `{!s}` was passed arguments: `{!r}` and keyword arguments: `{!r}`".format(
-                            func.__name__, args, kwargs
+                        "(doc-log :: {!s}:{!s}:{!s}) function: `{!s}` was passed arguments: `{!r}` and keyword arguments: `{!r}`".format(
+                            _frame.f_code.co_name,
+                            func.__code__.co_firstlineno + 1,
+                            _frame.f_lineno,
+                            func.__name__,
+                            args,
+                            kwargs,
                         )
                     )
                 _function_return_value = func(*args, **kwargs)
 
+                _frame = _get_context_frame().frame
                 if type_check:
                     if "rtypes" in rules:
                         _type_check_rtypes_result = type_check_rtypes(
@@ -87,21 +111,35 @@ def doc_log(
                         if not _type_check_rtypes_result.result:
                             if LOGGER.level >= logging.ERROR or _active_type_check:
                                 raise TypeError(
-                                    "(doc-log) return value was not of expected type: `{!s}` was actually `{!s}`".format(
+                                    "(doc-log :: {!s}:{!s}:{!s}) return value was not of expected type: `{!s}` was actually `{!s}`".format(
+                                        _frame.f_code.co_name,
+                                        func.__code__.co_firstlineno
+                                        + 1
+                                        + _type_check_rtypes_result.item.lineno,
+                                        _frame.f_lineno,
                                         _type_check_rtypes_result.expected,
                                         _type_check_rtypes_result.actual,
                                     )
                                 )
                             else:
                                 LOGGER.warning(
-                                    "(doc-log) return value was not of expected type: `{!s}` was actually `{!s}`".format(
+                                    "(doc-log :: {!s}:{!s}:{!s}) return value was not of expected type: `{!s}` was actually `{!s}`".format(
+                                        _frame.f_code.co_name,
+                                        func.__code__.co_firstlineno
+                                        + 1
+                                        + _type_check_rtypes_result.item.lineno,
+                                        _frame.f_lineno,
                                         _type_check_rtypes_result.expected,
                                         _type_check_rtypes_result.actual,
                                     )
                                 )
                     else:
                         LOGGER.warning(
-                            "(doc-log) `type_check` was defined, however, no `rtypes` section could be parsed."
+                            "(doc-log :: {!s}:{!s}:{!s}) `type_check` was defined, however, no `rtypes` section could be parsed.".format(
+                                _frame.f_code.co_name,
+                                func.__code__.co_firstlineno + 1,
+                                _frame.f_lineno,
+                            )
                         )
             else:
                 _function_return_value = func(*args, **kwargs)
